@@ -15,10 +15,17 @@ export default function Inscripciones() {
     formData.append("subject", "🔥 Nueva Inscripción de Prueba - Kansas Flag");
     formData.append("from_name", "Kansas Flag Website");
 
+    const object = Object.fromEntries(formData);
+    const json = JSON.stringify(object);
+
     try {
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: json,
       });
       const data = await response.json();
       
@@ -39,7 +46,7 @@ export default function Inscripciones() {
       <section className="relative min-h-[716px] flex items-center overflow-hidden bg-surface-container-low pt-12 pb-24 -mt-20">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-surface-container-low via-surface-container-low/80 to-transparent z-10"></div>
-          <img className="w-full h-full object-cover object-right opacity-40 scale-110" alt="team huddle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBn-XhKbUFUEbQ3AqVKEuFwMprr9NaVurWOr6Kyn707gUBRfLE6jET_uMBY9DyfD7f7BoFK7ZhYQY0J-imMmVOnTvZudG0FqMPMSBT2ilOABerS3AbWFBymfQZdFuP3kiIzuu4mTYyJ2elQIehswQAS1PuPY_lRl4mse7GdgVvyMPpWODw1fOgpFGfMr0fT0pNM72eSH7V4aQL6pXRDassT2cPtnFsg28hoGWWcQsQJmrfzb4I7zqE0Oy-0NOFoMmLoV4JBj9MN-Sg" />
+          <img className="w-full h-full object-cover object-right opacity-40 scale-110" alt="team huddle" src="/images/inscripciones-hero.jpg" />
         </div>
         <div className="max-w-screen-2xl mx-auto px-8 relative z-20 w-full pt-20">
           <div className="max-w-3xl">
@@ -83,20 +90,12 @@ export default function Inscripciones() {
               <div className="flex items-start gap-6 p-6 bg-surface-container-highest rounded-xl border-l-4 border-secondary transition-all hover:translate-x-2">
                 <span className="text-4xl font-headline font-black text-secondary/30">03</span>
                 <div>
-                  <h3 className="text-xl font-headline font-black uppercase tracking-tight">Pago de kit</h3>
-                  <p className="text-on-surface-variant mt-2">Recibe tu armadura oficial y forma parte activa de la legión.</p>
+                  <h3 className="text-xl font-headline font-black uppercase tracking-tight">Inicio de Entrenamientos</h3>
+                  <p className="text-on-surface-variant mt-2">Intégrate al equipo oficial y forma parte activa de la legión.</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-12 p-8 bg-neutral-950 text-white rounded-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl transition-all group-hover:scale-150"></div>
-              <div className="relative z-10">
-                <h4 className="text-3xl font-headline font-black uppercase tracking-tighter text-secondary-container">Oferta Exclusiva</h4>
-                <p className="text-5xl font-headline font-black mt-4 mb-2 tracking-tighter uppercase italic">Primer mes con kit de regalo</p>
-                <p className="text-neutral-400 font-body">Válido para inscripciones nuevas antes de fin de mes. Aplican restricciones.</p>
-              </div>
-            </div>
           </div>
 
           <div className="lg:col-span-7 bg-surface-container-low p-12 rounded-xl border-r-4 border-b-4 border-secondary-container relative">
@@ -132,16 +131,17 @@ export default function Inscripciones() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="relative border-b-2 border-outline-variant hover:border-primary focus-within:border-primary pb-2 transition-all">
                     <label className="block text-xs font-headline font-bold uppercase tracking-widest text-primary mb-2">Sede de Interés</label>
-                    <select name="Sede" required className="w-full bg-transparent border-0 focus:ring-0 transition-all font-body text-lg py-2 appearance-none outline-none dark:bg-zinc-950">
-                      <option value="">Seleccionar sede</option>
-                      <option value="Sede Mimosa">Sede Mimosa</option>
-                      <option value="Sede Azcapotzalco">Sede Azcapotzalco</option>
-                      <option value="Sede Metepec">Sede Metepec</option>
+                    <select name="Sede" defaultValue="" required className="w-full bg-transparent border-0 focus:ring-0 transition-all font-body text-lg py-2 outline-none appearance-none">
+                      <option value="" disabled className="text-zinc-500 bg-white dark:bg-zinc-900">Seleccionar sede</option>
+                      <option value="Mimosa" className="text-zinc-900 bg-white dark:bg-zinc-900 dark:text-white">Sede Mimosa</option>
+                      <option value="Azcapotzalco" className="text-zinc-900 bg-white dark:bg-zinc-900 dark:text-white">Sede Azcapotzalco</option>
+                      <option value="Metepec" className="text-zinc-900 bg-white dark:bg-zinc-900 dark:text-white">Sede Metepec</option>
+                      <option value="Coacalco" className="text-zinc-900 bg-white dark:bg-zinc-900 dark:text-white">Sede Coacalco</option>
                     </select>
                   </div>
                   <div className="relative border-b-2 border-outline-variant hover:border-primary focus-within:border-primary pb-2 transition-all">
                     <label className="block text-xs font-headline font-bold uppercase tracking-widest text-primary mb-2">Teléfono del Tutor (o personal)</label>
-                    <input name="Telefono" required className="w-full bg-transparent border-0 focus:ring-0 transition-all font-body text-lg py-2 outline-none" placeholder="55 1234 5678" type="tel" />
+                    <input name="Telefono" required className="w-full bg-transparent border-0 focus:ring-0 transition-all font-body text-lg py-2 outline-none" placeholder="55 3997 1470" type="tel" />
                   </div>
                 </div>
                 
@@ -177,15 +177,6 @@ export default function Inscripciones() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-5xl font-headline font-black text-center uppercase tracking-tighter mb-16 italic">Preguntas <span className="text-primary">Frecuentes</span></h2>
           <div className="space-y-4">
-            <details className="group bg-surface rounded-xl p-6 transition-all border-b-2 border-transparent open:border-primary cursor-pointer">
-              <summary className="flex justify-between items-center list-none outline-none">
-                <h3 className="text-xl font-headline font-bold uppercase tracking-tight">¿Qué incluye el kit de regalo?</h3>
-                <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-              </summary>
-              <div className="mt-4 text-on-surface-variant font-body leading-relaxed border-t border-outline-variant/30 pt-4">
-                El kit oficial incluye el jersey de juego sublimado con tecnología de alto rendimiento, shorts deportivos coordinados y calcetas oficiales de la liga.
-              </div>
-            </details>
             <details className="group bg-surface rounded-xl p-6 transition-all border-b-2 border-transparent open:border-primary cursor-pointer">
               <summary className="flex justify-between items-center list-none outline-none">
                 <h3 className="text-xl font-headline font-bold uppercase tracking-tight">¿Necesito experiencia previa?</h3>

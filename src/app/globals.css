@@ -83,4 +83,78 @@
   .animate-slide-infinite {
     animation: slide 100s linear infinite;
   }
+
+  @keyframes slide-reverse {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0%); }
+  }
+
+  .animate-slide-reverse-infinite {
+    animation: slide-reverse 180s linear infinite;
+  }
+
+  @keyframes heartbeat-neon {
+    0%, 100% {
+      text-shadow: 0 0 5px rgba(227, 24, 55, 0.4), 0 0 10px rgba(227, 24, 55, 0.4);
+      transform: scale(1);
+    }
+    15% {
+      text-shadow: 0 0 10px rgba(255, 218, 216, 0.8), 0 0 20px rgba(227, 24, 55, 0.8), 0 0 40px rgba(227, 24, 55, 1), 0 0 80px rgba(185, 0, 39, 1);
+      transform: scale(1.03);
+    }
+    30% {
+      text-shadow: 0 0 5px rgba(227, 24, 55, 0.4), 0 0 10px rgba(227, 24, 55, 0.4);
+      transform: scale(1);
+    }
+    45% {
+      text-shadow: 0 0 10px rgba(255, 218, 216, 0.8), 0 0 20px rgba(227, 24, 55, 0.8), 0 0 40px rgba(227, 24, 55, 1), 0 0 80px rgba(185, 0, 39, 1);
+      transform: scale(1.03);
+    }
+    60% {
+      text-shadow: 0 0 5px rgba(227, 24, 55, 0.4), 0 0 10px rgba(227, 24, 55, 0.4);
+      transform: scale(1);
+    }
+  }
+
+  .animate-heartbeat-neon {
+    animation: heartbeat-neon 1.5s ease-in-out infinite;
+    display: inline-block;
+  }
+
+  @keyframes ember-glow {
+    0%, 100% {
+      text-shadow: 0 0 10px rgba(227, 24, 55, 0.3), 0 0 20px rgba(185, 0, 39, 0.2);
+      color: #b90027; /* Dark red */
+    }
+    50% {
+      text-shadow: 0 0 20px rgba(255, 184, 28, 0.6), 0 0 40px rgba(227, 24, 55, 0.8), 0 0 60px rgba(227, 24, 55, 0.5);
+      color: #ff3333; /* Bright searing red */
+    }
+  }
+
+  .animate-ember-glow {
+    animation: ember-glow 3s ease-in-out infinite;
+    display: inline-block;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e4e4e7; /* zinc-200 */
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #d4d4d8; /* zinc-300 */
+  }
 }
+/* Google Translate Widget Annihilation */
+.goog-te-banner-frame { display: none !important; visibility: hidden !important; }
+.goog-te-banner-frame.skiptranslate { display: none !important; visibility: hidden !important; }
+body, html { top: 0px !important; position: static !important; margin-top: 0px !important; }
+.skiptranslate iframe { display: none !important; }
+#goog-gt-tt { display: none !important; }
+.goog-tooltip, .goog-tooltip:hover { display: none !important; }
+.goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }

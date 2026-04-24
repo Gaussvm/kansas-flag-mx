@@ -3,6 +3,7 @@ import { Epilogue, Inter } from "next/font/google";
 import "./globals.css";
 import TopNavBar from "@/components/TopNavBar";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 const epilogue = Epilogue({
   variable: "--font-epilogue",
@@ -15,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kansas Flag México | The Kinetic Arena",
+  title: "Kansas Flag México | Tochito Club",
   description: "Club y academia de flag football líder en CDMX y Edomex.",
   icons: {
     icon: "/icon.png?v=2",
@@ -39,6 +40,11 @@ export default function RootLayout({
         <main className="flex-grow pt-20">
           {children}
         </main>
+        
+        {/* Elfsight Chatbot */}
+        <div className="elfsight-app-e9c21da5-9bee-4167-91cb-d4cc0ace0d19" data-elfsight-app-lazy></div>
+        <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
+        
         <Footer />
       </body>
     </html>

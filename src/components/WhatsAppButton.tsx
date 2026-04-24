@@ -5,7 +5,7 @@ export default function WhatsAppButton() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
       <Link
-        href="https://wa.me/5215539971470"
+        href="https://wa.me/525539971470"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chatear por WhatsApp"

@@ -38,7 +38,7 @@ export default function Programas() {
             <div className="absolute bottom-0 left-0 p-8">
               <h3 className="text-3xl font-black font-headline text-white uppercase italic mb-2">Infantiles</h3>
               <p className="text-white/90 font-body mb-4 max-w-md">Fundamentos técnicos y trabajo en equipo para los futuros QB del país. <br /><span className="font-bold text-secondary-container">Edades: 5 a 12 años.</span></p>
-              <Link href="/sedes" className="inline-block bg-white text-primary px-6 py-2 font-headline font-bold uppercase text-sm rounded-md hover:bg-secondary-container hover:text-on-secondary-container transition-colors">Ver horarios</Link>
+
             </div>
           </div>
 
@@ -48,7 +48,7 @@ export default function Programas() {
             <div className="absolute bottom-0 left-0 p-8">
               <h3 className="text-3xl font-black font-headline text-white uppercase italic mb-2">Femenil</h3>
               <p className="text-white/90 font-body mb-4">Empoderamiento y destreza atlética en la liga de mayor crecimiento.<br /><span className="font-bold text-secondary-container">Edades: 13+ años.</span></p>
-              <Link href="/sedes" className="inline-block bg-white text-primary px-6 py-2 font-headline font-bold uppercase text-sm rounded-md hover:bg-secondary-container hover:text-on-secondary-container transition-colors">Ver horarios</Link>
+
             </div>
           </div>
 
@@ -58,17 +58,17 @@ export default function Programas() {
             <div className="absolute bottom-0 left-0 p-8">
               <h3 className="text-3xl font-black font-headline text-white uppercase italic mb-2">Varonil</h3>
               <p className="text-white/90 font-body mb-4">Competencia de alto nivel y perfeccionamiento estratégico.<br /><span className="font-bold text-secondary-container">Edades: 15+ años.</span></p>
-              <Link href="/sedes" className="inline-block bg-white text-primary px-6 py-2 font-headline font-bold uppercase text-sm rounded-md hover:bg-secondary-container hover:text-on-secondary-container transition-colors">Ver horarios</Link>
+
             </div>
           </div>
 
           <div className="md:col-span-7 group relative overflow-hidden bg-surface-container-highest min-h-[400px]">
-            <img className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" alt="mixto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3LK0sETn-tz6t9iS01aT983lJm8535cXlHa6H4HRcv9A7-spehrQFBTbNclVIwWMpds6QHo14FAXXdaKoDLdUtZjUzH_CPXUp7QEG590J0p_qd4GPj1Yju8hf_bsj6xQ1hKf14sWGQ1SWEo0Jhzqk-qaq1OEe6GNPDV1J7u_lhKA5FZYpVeHqN1sEfZ29Xl5V41JzpakedlXUCbSeMqQJrw19gKJ0e614ctL5PcFQjQakvlMYYq9BLSMjEReYt4Rrh9ed3H4WnTU" />
+            <img className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" alt="mixto" src="/images/categoria-mixto.jpg" />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-8">
               <h3 className="text-3xl font-black font-headline text-white uppercase italic mb-2">Mixto</h3>
               <p className="text-white/90 font-body mb-4">La integración perfecta de habilidades en un ambiente recreativo y competitivo.<br /><span className="font-bold text-secondary-container">Todas las edades.</span></p>
-              <Link href="/sedes" className="inline-block bg-white text-primary px-6 py-2 font-headline font-bold uppercase text-sm rounded-md hover:bg-secondary-container hover:text-on-secondary-container transition-colors">Ver horarios</Link>
+
             </div>
           </div>
         </div>
