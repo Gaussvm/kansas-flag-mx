@@ -13,15 +13,30 @@ async function getLiveStreams() {
     }
 
     const lines = text.split('\n').filter(line => line.trim().length > 0);
-    const streams = lines.slice(1).map(line => {
+    const rawStreams = lines.slice(1).map(line => {
       const parts = line.split(',');
       return {
         equipo: parts[0]?.replace(/"/g, '').trim() || '',
         linkEnvivo: parts.slice(1).join(',').replace(/"/g, '').trim()
       };
-    });
+    }).filter(s => s.equipo || s.linkEnvivo);
+
+    const streams = await Promise.all(rawStreams.map(async (s) => {
+      if (s.linkEnvivo && s.linkEnvivo.includes('facebook.com/share/')) {
+        try {
+          const redirectRes = await fetch(s.linkEnvivo, { redirect: 'manual' });
+          if (redirectRes.status === 301 || redirectRes.status === 302 || redirectRes.status === 307 || redirectRes.status === 308) {
+            const loc = redirectRes.headers.get('location');
+            if (loc) s.linkEnvivo = loc;
+          }
+        } catch(e) {
+          console.error("Error al resolver URL de Facebook:", e);
+        }
+      }
+      return s;
+    }));
     
-    return streams.filter(s => s.equipo || s.linkEnvivo);
+    return streams;
   } catch (error) {
     console.error("No se pudieron cargar las transmisiones", error);
     return [];
