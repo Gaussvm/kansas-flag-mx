@@ -1,5 +1,8 @@
-﻿node_modules\
-.next\
-kansas-flag-mx-hostinger.zip\
-.vercel\
+node_modules
+.next
+kansas-flag-mx-hostinger.zip
+.vercel
 
+# Env files
+.env*.local
+.env

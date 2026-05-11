@@ -1,0 +1,10 @@
+:HL["/_next/static/chunks/0dj9p03624hxe.css","style"]
+:HL["/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/cb065f3ef140709c-s.p.0g7x44k17s8f_.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap","style"]
+:HL["https://lh3.googleusercontent.com/aida-public/AB6AXuDHnJJr4j4kQ7szTSefyt61GTayK_h-VqHfXcAHj-mJLmKIlkkeoIKTjGlMMZTfos9deXWMnhpWKpXIcqyxOkynP5EZmiZYu7OrAyov_fx-6g1YkiqsV_8pbP0WQrYGNSOJ0UPLb5fIApJqTo-JrS1zQab-H-jfVC65swiL8M01EbClszI9YVLWuhvwXbIUilzaBflNUiKcYQTFwwDf27dceG4KPvoDDDNsxmMnw7ZtGEz-tPrXDW8brnY6QqqJ6pFQ5cAKleTs2Qs","image"]
+:HL["/images/infantiles-real.jpg","image"]
+:HL["/images/femenil-real.jpg","image"]
+:HL["/images/varonil-real.jpg","image"]
+:HL["https://lh3.googleusercontent.com/aida-public/AB6AXuB3LK0sETn-tz6t9iS01aT983lJm8535cXlHa6H4HRcv9A7-spehrQFBTbNclVIwWMpds6QHo14FAXXdaKoDLdUtZjUzH_CPXUp7QEG590J0p_qd4GPj1Yju8hf_bsj6xQ1hKf14sWGQ1SWEo0Jhzqk-qaq1OEe6GNPDV1J7u_lhKA5FZYpVeHqN1sEfZ29Xl5V41JzpakedlXUCbSeMqQJrw19gKJ0e614ctL5PcFQjQakvlMYYq9BLSMjEReYt4Rrh9ed3H4WnTU","image"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"programas","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"2Ikl0Etr53RcAyIvEmMW9"}

@@ -18,6 +18,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Kansas Flag México | Tochito Club",
   description: "Club y academia de flag football líder en CDMX y Edomex.",
+  manifest: "/manifest.json",
   icons: {
     icon: "/icon.png?v=2",
     shortcut: "/icon.png?v=2",
