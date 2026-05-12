@@ -36,9 +36,9 @@ export default function RootLayout({
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-full flex flex-col bg-surface font-body text-on-surface selection:bg-secondary-container">
+      <body className="min-h-full flex flex-col bg-surface font-body text-on-surface selection:bg-secondary-container overflow-x-hidden">
         <TopNavBar />
-        <main className="flex-grow pt-20">
+        <main className="flex-grow pt-20 w-full overflow-x-hidden">
           {children}
         </main>
         
