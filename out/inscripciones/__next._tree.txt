@@ -1,7 +1,0 @@
-:HL["/_next/static/chunks/0dj9p03624hxe.css","style"]
-:HL["/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-:HL["/_next/static/media/cb065f3ef140709c-s.p.0g7x44k17s8f_.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-:HL["https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap","style"]
-:HL["https://lh3.googleusercontent.com/aida-public/AB6AXuBn-XhKbUFUEbQ3AqVKEuFwMprr9NaVurWOr6Kyn707gUBRfLE6jET_uMBY9DyfD7f7BoFK7ZhYQY0J-imMmVOnTvZudG0FqMPMSBT2ilOABerS3AbWFBymfQZdFuP3kiIzuu4mTYyJ2elQIehswQAS1PuPY_lRl4mse7GdgVvyMPpWODw1fOgpFGfMr0fT0pNM72eSH7V4aQL6pXRDassT2cPtnFsg28hoGWWcQsQJmrfzb4I7zqE0Oy-0NOFoMmLoV4JBj9MN-Sg","image"]
-:HL["https://lh3.googleusercontent.com/aida-public/AB6AXuCUPzQvXNFq3tfPc7XKArd98Jx2EYbN9jWwob5La_XFB_3On3GPcR8nY-Be3LtjHNbfAliozuXvhnEcJ7zLdwuto7BpcD7Fzowteo_ILj7zbCKNqxCXN3bbp8rnyMeaBua5oke3LqoK-HEDhR_E-6WyFAZJYQlhYr-WZy7FTZAdEvcSGkL_DA_r8BrcGlNAqPOVgqcfo0RS9W_IRVwHbzSZpEXHgB7t5ig6JwXwfhUscAfxoLtiqUVREpQUdRJPbVjQxGISMynqOBI","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"inscripciones","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"2Ikl0Etr53RcAyIvEmMW9"}
