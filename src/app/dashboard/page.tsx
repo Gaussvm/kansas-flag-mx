@@ -29,11 +29,16 @@ export default async function DashboardPage() {
               Bienvenido a tu portal de {profile?.role === 'admin' ? 'Administrador' : profile?.role === 'staff' ? 'Staff' : 'Jugador'}
             </p>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="px-6 py-2 bg-error-container text-on-error-container rounded-full font-label text-sm font-bold hover:bg-error hover:text-on-error transition-colors">
-              Cerrar Sesión
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <a href="/dashboard/perfil" className="px-5 py-2 bg-surface-variant text-on-surface-variant rounded-full font-label text-sm font-bold hover:bg-surface-container-highest transition-colors">
+              Editar Perfil
+            </a>
+            <form action="/auth/signout" method="post">
+              <button className="px-5 py-2 bg-error-container text-on-error-container rounded-full font-label text-sm font-bold hover:bg-error hover:text-on-error transition-colors">
+                Cerrar Sesión
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -42,7 +47,7 @@ export default async function DashboardPage() {
             <span className="material-symbols-outlined text-5xl text-primary-container mb-4">badge</span>
             <h3 className="font-headline font-bold text-lg mb-2">Credencial Digital</h3>
             <p className="text-sm text-tertiary mb-4">Accede a tu código QR para pase de lista en entrenamientos y partidos.</p>
-            <button className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full text-sm font-bold w-full">Ver Credencial</button>
+            <a href="/dashboard/credencial" className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full text-sm font-bold w-full hover:bg-secondary hover:text-on-secondary transition-colors">Ver Credencial</a>
           </div>
 
           {/* Card 2: Torneos */}
