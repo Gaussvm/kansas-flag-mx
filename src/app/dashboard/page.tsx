@@ -41,6 +41,37 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* 
+          Admin Control Maestro Panel 
+        */}
+        {profile?.role === 'admin' && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-zinc-900 via-black to-[#1a0505] rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-[url('/images/inscripciones-hero.jpg')] bg-cover bg-center opacity-20 mix-blend-overlay group-hover:scale-105 transition-transform duration-700"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+              
+              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 rounded-2xl bg-[#E31837]/20 border border-[#E31837]/50 flex items-center justify-center shadow-[0_0_30px_rgba(227,24,55,0.3)]">
+                    <span className="material-symbols-outlined text-4xl text-[#E31837]">admin_panel_settings</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-headline font-black text-white uppercase tracking-wider mb-1">Control Maestro</h2>
+                    <p className="text-zinc-400 font-body text-sm max-w-md">Panel de administración global: Gestiona jugadores, staff, categorías, tarifas y aprueba pagos.</p>
+                  </div>
+                </div>
+                <a 
+                  href="/dashboard/admin" 
+                  className="w-full sm:w-auto px-8 py-4 bg-[#E31837] text-white rounded-xl font-headline font-black text-sm uppercase tracking-widest hover:bg-red-700 active:scale-95 transition-all shadow-[0_0_20px_rgba(227,24,55,0.4)] text-center whitespace-nowrap"
+                >
+                  Entrar al Panel
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Player General Modules */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Credencial (Preview) */}
           <div className="bg-surface-container rounded-2xl p-6 border border-surface-container-highest flex flex-col items-center justify-center text-center">
