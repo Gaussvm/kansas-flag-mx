@@ -53,7 +53,10 @@ export default function TopNavBar() {
           <GoogleTranslate />
 
           {/* Desktop Button */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-3">
+            <Link href="/login" className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black px-6 py-3 font-headline uppercase font-black tracking-tighter hover:bg-black dark:hover:bg-white active:scale-95 transform transition-all duration-300">
+              Mi Portal
+            </Link>
             <Link href="/inscripciones" className="bg-[#E31837] text-white px-6 py-3 font-headline uppercase font-black tracking-tighter hover:bg-black active:scale-95 transform transition-all duration-300">
               Agendar Prueba
             </Link>
@@ -86,7 +89,14 @@ export default function TopNavBar() {
             <span className="font-headline font-black uppercase tracking-widest text-sm text-red-600 dark:text-red-500">Transmisión en Vivo</span>
           </Link>
           
-          <div className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-900">
+          <div className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-900 flex flex-col gap-3">
+            <Link 
+              onClick={() => setIsMenuOpen(false)} 
+              href="/login" 
+              className="block w-full text-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black px-6 py-4 font-headline uppercase font-black tracking-widest active:scale-95 transform transition-all"
+            >
+              Mi Portal
+            </Link>
             <Link 
               onClick={() => setIsMenuOpen(false)} 
               href="/inscripciones" 
