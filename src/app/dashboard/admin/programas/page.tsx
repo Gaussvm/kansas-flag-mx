@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import ProgramForm from "@/components/admin/ProgramForm";
+import ProgramList from "@/components/admin/ProgramList";
 
 export default async function ProgramasPage() {
   const supabase = await createClient();
@@ -26,22 +27,7 @@ export default async function ProgramasPage() {
           {(!programs || programs.length === 0) ? (
             <p className="text-zinc-500 font-body text-sm">No hay programas creados.</p>
           ) : (
-            <div className="space-y-3">
-              {programs.map(p => (
-                <div key={p.id} className="bg-zinc-900 border border-white/5 rounded-xl p-4 flex justify-between items-center">
-                  <div>
-                    <h4 className="font-headline font-bold text-white text-lg">{p.name}</h4>
-                    <span className="text-xs text-zinc-500 uppercase tracking-widest capitalize">{p.type.replace('_', ' ')}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-zinc-400">{new Date(p.start_date).toLocaleDateString()} - {new Date(p.end_date).toLocaleDateString()}</p>
-                    <span className={`text-xs uppercase font-bold tracking-wide ${p.status === 'active' ? 'text-emerald-500' : 'text-zinc-600'}`}>
-                      {p.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ProgramList programs={programs} />
           )}
         </div>
       </div>

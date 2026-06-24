@@ -21,6 +21,10 @@ async function verifyAdmin() {
 export async function createProgramAction(data: { name: string; type: string; start_date: string; end_date: string }) {
   const supabase = await verifyAdmin();
   
+  if (data.start_date > data.end_date) {
+    throw new Error("La fecha de inicio no puede ser posterior a la fecha de fin.");
+  }
+
   const { data: existing } = await supabase.from('programs')
     .select('id')
     .eq('name', data.name)
@@ -157,5 +161,41 @@ export async function upsertScoutingResultsAction(programId: string, results: an
   if (error) throw new Error("Error guardando resultados de scouting: " + error.message);
 
   revalidatePath('/dashboard/admin/scouting');
+  return { success: true };
+}
+
+export async function updateProgramAction(id: string, data: { name: string; type: string; start_date: string; end_date: string; status: string }) {
+  const supabase = await verifyAdmin();
+  
+  if (data.start_date > data.end_date) {
+    throw new Error("La fecha de inicio no puede ser posterior a la fecha de fin.");
+  }
+
+  // Prevent duplicate if they changed name/start_date to match another existing one
+  const { data: existing } = await supabase.from('programs')
+    .select('id')
+    .eq('name', data.name)
+    .eq('start_date', data.start_date)
+    .neq('id', id)
+    .single();
+    
+  if (existing) {
+    throw new Error("Ya existe otro programa con ese nombre en esa fecha de inicio.");
+  }
+
+  const { error } = await supabase.from('programs').update(data).eq('id', id);
+  if (error) throw new Error("Error al actualizar programa: " + error.message);
+
+  revalidatePath('/dashboard/admin/programas');
+  return { success: true };
+}
+
+export async function updateProgramStatusAction(id: string, status: string) {
+  const supabase = await verifyAdmin();
+  
+  const { error } = await supabase.from('programs').update({ status }).eq('id', id);
+  if (error) throw new Error("Error al cambiar estado: " + error.message);
+
+  revalidatePath('/dashboard/admin/programas');
   return { success: true };
 }
