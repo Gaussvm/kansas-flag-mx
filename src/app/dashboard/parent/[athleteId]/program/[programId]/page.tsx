@@ -11,6 +11,7 @@ interface PageProps {
 
 export default async function BoletinPage({ params }: PageProps) {
   const supabase = await createClient();
+  const resolvedParams = await params;
 
   // 1. Get Athlete & Enrollment Data
   const { data: athlete } = await supabase
@@ -22,8 +23,8 @@ export default async function BoletinPage({ params }: PageProps) {
         programs!inner (*)
       )
     `)
-    .eq("id", params.athleteId)
-    .eq("enrollments.program_id", params.programId)
+    .eq("id", resolvedParams.athleteId)
+    .eq("enrollments.program_id", resolvedParams.programId)
     .single();
 
   if (!athlete) {
@@ -41,15 +42,15 @@ export default async function BoletinPage({ params }: PageProps) {
       *,
       assessments!inner ( program_id )
     `)
-    .eq("athlete_id", params.athleteId)
-    .eq("assessments.program_id", params.programId)
+    .eq("athlete_id", resolvedParams.athleteId)
+    .eq("assessments.program_id", resolvedParams.programId)
     .order('created_at', { ascending: true });
 
   // 3. Get Public Coach Notes
   const { data: notes } = await supabase
     .from("coach_notes")
     .select("*")
-    .eq("athlete_id", params.athleteId)
+    .eq("athlete_id", resolvedParams.athleteId)
     .eq("is_private", false)
     .order('created_at', { ascending: false });
 
@@ -57,7 +58,7 @@ export default async function BoletinPage({ params }: PageProps) {
   const { data: evidence } = await supabase
     .from("evidence_links")
     .select("*")
-    .eq("athlete_id", params.athleteId)
+    .eq("athlete_id", resolvedParams.athleteId)
     .order('created_at', { ascending: false });
 
   return (

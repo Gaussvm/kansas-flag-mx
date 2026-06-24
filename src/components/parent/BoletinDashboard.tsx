@@ -201,7 +201,7 @@ export default function BoletinDashboard({ athlete, program, enrollment, results
                         </div>
 
                         <div className="col-span-2 flex flex-col justify-center">
-                          {improvement !== null && diff !== 0 ? (
+                          {improvement !== null && improvement !== 0 ? (
                             <div className={`flex items-center gap-2 p-3 rounded-lg ${isBetter ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-400'}`}>
                               <span className="material-symbols-outlined">
                                 {isBetter ? 'trending_up' : 'trending_flat'}
