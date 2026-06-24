@@ -8,8 +8,10 @@ export default function AdminNav() {
 
   const links = [
     { href: "/dashboard/admin", label: "Inicio", icon: "home" },
-    { href: "/dashboard/admin/directorio", label: "Directorio", icon: "group" },
-    { href: "/dashboard/admin/catalogos", label: "Catálogos", icon: "category" },
+    { href: "/dashboard/admin/programas", label: "Programas", icon: "event" },
+    { href: "/dashboard/admin/crm", label: "Familias / CRM", icon: "group" },
+    { href: "/dashboard/admin/scouting", label: "Scouting", icon: "analytics" },
+    { href: "/dashboard/admin/directorio", label: "Directorio", icon: "contact_page" },
     { href: "/dashboard/admin/finanzas", label: "Finanzas", icon: "payments" },
   ];
 
