@@ -31,8 +31,8 @@ export default async function AdminLayout({
       <AdminNav />
 
       {/* Main Content Area */}
-      <div className="flex-grow p-4 sm:p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-grow p-4 sm:p-8 overflow-y-auto w-full">
+        <div className="w-full mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
             <div>
