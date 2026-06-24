@@ -95,7 +95,7 @@ export async function getReceiptSignedUrlAction(filePath: string) {
   return { signedUrl: data.signedUrl };
 }
 
-export async function approveReceiptAction(receiptId: string, adminNotes?: string) {
+export async function approveReceiptAction(receiptId: string, isPartial: boolean, adminNotes?: string) {
   const supabase = await createClient();
   const adminUser = await verifyAdmin(supabase);
 
@@ -121,7 +121,7 @@ export async function approveReceiptAction(receiptId: string, adminNotes?: strin
 
   // 3. Update Enrollment
   const { error: updateEnrollError } = await supabase.from('enrollments')
-    .update({ payment_status: 'paid' })
+    .update({ payment_status: isPartial ? 'partial' : 'paid' })
     .eq('id', receipt.enrollment_id);
 
   if (updateEnrollError) throw new Error("Recibo aprobado pero falló al actualizar inscripción.");

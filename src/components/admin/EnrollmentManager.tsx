@@ -71,11 +71,14 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
     }
   };
 
-  const handleApprove = async (receiptId: string) => {
-    if(!confirm("¿Aprobar este comprobante? La inscripción pasará a Pagado.")) return;
+  const handleApprove = async (receiptId: string, isPartial: boolean) => {
+    const msg = isPartial 
+      ? "¿Aprobar comprobante como PAGO PARCIAL? La inscripción quedará como 'Pagado Parcial'."
+      : "¿Aprobar comprobante como PAGO TOTAL? La inscripción pasará a 'Pagado'.";
+    if(!confirm(msg)) return;
     setLoading(true);
     try {
-      await approveReceiptAction(receiptId, "Aprobado por admin");
+      await approveReceiptAction(receiptId, isPartial, "Aprobado por admin");
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
@@ -156,6 +159,7 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                         disabled={loading}
                         className={`border rounded p-2 text-xs focus:outline-none focus:border-red-500 font-bold
                           ${enrollment.payment_status === 'paid' ? 'bg-emerald-900/30 border-emerald-500/30 text-emerald-400' :
+                            enrollment.payment_status === 'partial' ? 'bg-purple-900/30 border-purple-500/30 text-purple-400' :
                             enrollment.payment_status === 'pending' ? 'bg-amber-900/30 border-amber-500/30 text-amber-400' :
                             enrollment.payment_status === 'waived' ? 'bg-blue-900/30 border-blue-500/30 text-blue-400' :
                             'bg-zinc-900 border-white/10 text-zinc-400'
@@ -163,7 +167,8 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                         `}
                       >
                         <option value="pending">Pago Pendiente</option>
-                        <option value="paid">Pagado</option>
+                        <option value="partial">Pagado Parcial</option>
+                        <option value="paid">Pagado Total</option>
                         <option value="waived">Becado / Exento</option>
                         <option value="refunded">Reembolsado</option>
                       </select>
@@ -204,12 +209,15 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                                 <button onClick={() => viewReceipt(receipt.file_path)} className="text-blue-400 hover:text-blue-300 text-xs font-bold transition-colors">Ver</button>
                                 
                                 {receipt.status === 'pending_review' && (
-                                  <div className="flex items-center gap-1 border-l border-white/10 pl-3 ml-1">
-                                    <button onClick={() => handleApprove(receipt.id)} disabled={loading} className="text-emerald-500 hover:text-emerald-400 disabled:opacity-50 transition-colors" title="Aprobar">
-                                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                  <div className="flex items-center gap-2 border-l border-white/10 pl-3 ml-1">
+                                    <button onClick={() => handleApprove(receipt.id, false)} disabled={loading} className="text-emerald-500 hover:text-emerald-400 disabled:opacity-50 transition-colors flex items-center gap-0.5 text-[10px] font-bold" title="Aprobar Total">
+                                      <span className="material-symbols-outlined text-[16px]">check_circle</span> TOTAL
                                     </button>
-                                    <button onClick={() => handleReject(receipt.id)} disabled={loading} className="text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors" title="Rechazar">
-                                      <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                    <button onClick={() => handleApprove(receipt.id, true)} disabled={loading} className="text-purple-500 hover:text-purple-400 disabled:opacity-50 transition-colors flex items-center gap-0.5 text-[10px] font-bold" title="Aprobar Parcial">
+                                      <span className="material-symbols-outlined text-[16px]">monetization_on</span> PARCIAL
+                                    </button>
+                                    <button onClick={() => handleReject(receipt.id)} disabled={loading} className="text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors flex items-center gap-0.5 text-[10px] font-bold ml-1" title="Rechazar">
+                                      <span className="material-symbols-outlined text-[16px]">cancel</span>
                                     </button>
                                   </div>
                                 )}

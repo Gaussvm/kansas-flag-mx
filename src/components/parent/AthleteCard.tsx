@@ -69,6 +69,11 @@ export default function AthleteCard({ athlete }: { athlete: Athlete }) {
                           <span className="material-symbols-outlined text-sm">check_circle</span>
                           Pagado
                         </span>
+                      ) : enrollment.payment_status === 'partial' ? (
+                        <span className="px-3 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">monetization_on</span>
+                          Parcial
+                        </span>
                       ) : enrollment.payment_status === 'pending' ? (
                         <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
                           <span className="material-symbols-outlined text-sm">schedule</span>
