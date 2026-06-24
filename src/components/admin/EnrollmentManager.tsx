@@ -103,7 +103,7 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
         <div className="p-4 border-b border-white/5 flex justify-between items-center bg-zinc-950 shrink-0">
           <div>
@@ -144,7 +144,7 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                         disabled={loading}
                         className="bg-zinc-900 border border-white/10 rounded p-2 text-xs text-zinc-300 focus:outline-none focus:border-red-500"
                       >
-                        <option value="active">Activo</option>
+                        <option value="enrolled">Activo</option>
                         <option value="waitlisted">Lista de Espera</option>
                         <option value="cancelled">Cancelado (Baja)</option>
                       </select>
@@ -182,9 +182,9 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                       {enrollment.payment_receipts && enrollment.payment_receipts.length > 0 ? (
                         <div className="space-y-2">
                           {enrollment.payment_receipts.map((receipt: any) => (
-                            <div key={receipt.id} className="flex items-center justify-between bg-zinc-950 p-3 rounded-lg border border-white/5">
+                            <div key={receipt.id} className="flex flex-col md:flex-row md:items-center justify-between bg-zinc-950 p-3 rounded-lg border border-white/5 gap-3">
                               <div className="flex flex-col">
-                                <span className="text-white font-medium text-xs truncate max-w-[200px]">{receipt.file_name}</span>
+                                <span className="text-white font-medium text-xs truncate max-w-[250px] md:max-w-[350px] lg:max-w-[450px]">{receipt.file_name}</span>
                                 <span className="text-zinc-500 text-[10px] mt-0.5">
                                   {new Date(receipt.created_at).toLocaleDateString()} • Subido por: {receipt.profiles?.first_name || 'Desconocido'}
                                 </span>

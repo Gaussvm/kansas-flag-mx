@@ -99,7 +99,7 @@ export async function registerAthleteAndEnrollAction(data: {
           athlete_id: athleteId,
           program_id: data.program_id,
           payment_status: data.payment_status,
-          status: 'active'
+          status: 'enrolled'
         });
         
       if (enrollError) {
@@ -300,7 +300,7 @@ export async function addEnrollmentAction(athleteId: string, programId: string, 
     athlete_id: athleteId,
     program_id: programId,
     payment_status: paymentStatus,
-    status: 'active'
+    status: 'enrolled'
   });
   
   if (error) {
