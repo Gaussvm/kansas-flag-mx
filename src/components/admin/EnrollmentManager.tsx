@@ -147,9 +147,9 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                         disabled={loading}
                         className="bg-zinc-900 border border-white/10 rounded p-2 text-xs text-zinc-300 focus:outline-none focus:border-red-500"
                       >
-                        <option value="enrolled">Activo</option>
-                        <option value="waitlisted">Lista de Espera</option>
-                        <option value="cancelled">Cancelado (Baja)</option>
+                        <option value="enrolled" className="bg-zinc-900 text-white">Activo</option>
+                        <option value="waitlisted" className="bg-zinc-900 text-white">Lista de Espera</option>
+                        <option value="cancelled" className="bg-zinc-900 text-white">Cancelado (Baja)</option>
                       </select>
 
                       {/* Estado de Pago */}
@@ -166,11 +166,11 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                           }
                         `}
                       >
-                        <option value="pending">Pago Pendiente</option>
-                        <option value="partial">Pagado Parcial</option>
-                        <option value="paid">Pagado Total</option>
-                        <option value="waived">Becado / Exento</option>
-                        <option value="refunded">Reembolsado</option>
+                        <option value="pending" className="bg-zinc-900 text-white">Pago Pendiente</option>
+                        <option value="partial" className="bg-zinc-900 text-white">Pagado Parcial</option>
+                        <option value="paid" className="bg-zinc-900 text-white">Pagado Total</option>
+                        <option value="waived" className="bg-zinc-900 text-white">Becado / Exento</option>
+                        <option value="refunded" className="bg-zinc-900 text-white">Reembolsado</option>
                       </select>
                     </div>
                     
@@ -241,17 +241,18 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
             <form onSubmit={handleEnroll} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <select name="program_id" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500 text-sm">
-                  <option value="">-- Seleccionar Programa --</option>
+                  <option value="" className="bg-zinc-900 text-white">-- Seleccionar Programa --</option>
                   {availablePrograms.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
+                    <option key={p.id} value={p.id} className="bg-zinc-900 text-white">{p.name}</option>
                   ))}
                 </select>
                 
                 <div className="flex gap-2">
                   <select name="payment_status" className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500 text-sm">
-                    <option value="pending">Pago Pendiente</option>
-                    <option value="paid">Pagado</option>
-                    <option value="waived">Becado / Exento</option>
+                    <option value="pending" className="bg-zinc-900 text-white">Pago Pendiente</option>
+                    <option value="partial" className="bg-zinc-900 text-white">Pagado Parcial</option>
+                    <option value="paid" className="bg-zinc-900 text-white">Pagado Total</option>
+                    <option value="waived" className="bg-zinc-900 text-white">Becado / Exento</option>
                   </select>
                   <button type="submit" disabled={loading || availablePrograms.length === 0} className="w-auto px-4 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-colors flex justify-center items-center gap-2">
                     <span className="material-symbols-outlined text-sm">add_circle</span>
