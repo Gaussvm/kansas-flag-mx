@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addEnrollmentAction, manageEnrollmentAction } from "@/lib/actions/adminActions";
+import { uploadReceiptAction, approveReceiptAction, rejectReceiptAction, getReceiptSignedUrlAction } from "@/lib/actions/paymentActions";
 
 export default function EnrollmentManager({ athlete, programs, onClose }: { athlete: any, programs: any[], onClose: () => void }) {
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,60 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
     setLoading(true);
     try {
       await manageEnrollmentAction(enrollmentId, newStatus, newPaymentStatus, null);
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, enrollmentId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('enrollment_id', enrollmentId);
+      
+      await uploadReceiptAction(formData);
+    } catch (err: any) {
+      alert("Error al subir: " + err.message);
+    } finally {
+      setLoading(false);
+      e.target.value = ''; // clear input
+    }
+  };
+
+  const viewReceipt = async (filePath: string) => {
+    try {
+      const { signedUrl } = await getReceiptSignedUrlAction(filePath);
+      window.open(signedUrl, '_blank');
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleApprove = async (receiptId: string) => {
+    if(!confirm("¿Aprobar este comprobante? La inscripción pasará a Pagado.")) return;
+    setLoading(true);
+    try {
+      await approveReceiptAction(receiptId, "Aprobado por admin");
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (receiptId: string) => {
+    const notes = prompt("Razón del rechazo:");
+    if (notes === null) return;
+    
+    setLoading(true);
+    try {
+      await rejectReceiptAction(receiptId, notes || "Rechazado por admin");
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
@@ -112,6 +167,59 @@ export default function EnrollmentManager({ athlete, programs, onClose }: { athl
                         <option value="waived">Becado / Exento</option>
                         <option value="refunded">Reembolsado</option>
                       </select>
+                    </div>
+                    
+                    {/* Comprobantes de Pago */}
+                    <div className="w-full mt-4 border-t border-white/5 pt-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h5 className="text-xs font-label text-zinc-400 uppercase tracking-widest">Comprobantes de Pago</h5>
+                        <label className={`cursor-pointer text-xs bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded transition-colors ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">upload</span> Subir manual</span>
+                          <input type="file" className="hidden" accept="image/jpeg, image/png, image/webp, application/pdf" onChange={(e) => handleUpload(e, enrollment.id)} disabled={loading} />
+                        </label>
+                      </div>
+                      
+                      {enrollment.payment_receipts && enrollment.payment_receipts.length > 0 ? (
+                        <div className="space-y-2">
+                          {enrollment.payment_receipts.map((receipt: any) => (
+                            <div key={receipt.id} className="flex items-center justify-between bg-zinc-950 p-3 rounded-lg border border-white/5">
+                              <div className="flex flex-col">
+                                <span className="text-white font-medium text-xs truncate max-w-[200px]">{receipt.file_name}</span>
+                                <span className="text-zinc-500 text-[10px] mt-0.5">
+                                  {new Date(receipt.created_at).toLocaleDateString()} • Subido por: {receipt.profiles?.first_name || 'Desconocido'}
+                                </span>
+                                {receipt.admin_notes && (
+                                  <span className="text-red-400/80 text-[10px] italic mt-1">Nota: {receipt.admin_notes}</span>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center gap-3">
+                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider
+                                  ${receipt.status === 'approved' ? 'bg-emerald-900/30 text-emerald-400' :
+                                    receipt.status === 'rejected' ? 'bg-red-900/30 text-red-400' :
+                                    'bg-amber-900/30 text-amber-400'}`}>
+                                  {receipt.status === 'pending_review' ? 'PENDIENTE' : receipt.status === 'approved' ? 'APROBADO' : 'RECHAZADO'}
+                                </span>
+                                
+                                <button onClick={() => viewReceipt(receipt.file_path)} className="text-blue-400 hover:text-blue-300 text-xs font-bold transition-colors">Ver</button>
+                                
+                                {receipt.status === 'pending_review' && (
+                                  <div className="flex items-center gap-1 border-l border-white/10 pl-3 ml-1">
+                                    <button onClick={() => handleApprove(receipt.id)} disabled={loading} className="text-emerald-500 hover:text-emerald-400 disabled:opacity-50 transition-colors" title="Aprobar">
+                                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                    </button>
+                                    <button onClick={() => handleReject(receipt.id)} disabled={loading} className="text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors" title="Rechazar">
+                                      <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-zinc-600 italic bg-zinc-950 p-3 rounded border border-white/5">No hay comprobantes cargados.</p>
+                      )}
                     </div>
                   </div>
                 ))}

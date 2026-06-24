@@ -41,7 +41,17 @@ export default async function CRMPage() {
         program_id,
         status,
         payment_status,
-        programs ( id, name )
+        programs ( id, name ),
+        payment_receipts (
+          id,
+          file_path,
+          file_name,
+          status,
+          amount,
+          admin_notes,
+          created_at,
+          profiles:profiles!payment_receipts_uploaded_by_fkey ( first_name, last_name, email )
+        )
       )
     `)
     .order("created_at", { ascending: false });

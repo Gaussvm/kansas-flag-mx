@@ -135,25 +135,25 @@ export default function AthleteDirectory({ athletes, parents, programs, categori
       </div>
 
       {/* Modals */}
-      {editingAthlete && (
+      {editingAthlete && athletes.find(a => a.id === editingAthlete.id) && (
         <AthleteEditModal 
-          athlete={editingAthlete} 
+          athlete={athletes.find(a => a.id === editingAthlete.id)} 
           categories={categories} 
           onClose={() => setEditingAthlete(null)} 
         />
       )}
 
-      {managingGuardiansFor && (
+      {managingGuardiansFor && athletes.find(a => a.id === managingGuardiansFor.id) && (
         <GuardianManager 
-          athlete={managingGuardiansFor} 
+          athlete={athletes.find(a => a.id === managingGuardiansFor.id)} 
           parents={parents} 
           onClose={() => setManagingGuardiansFor(null)} 
         />
       )}
 
-      {managingEnrollmentsFor && (
+      {managingEnrollmentsFor && athletes.find(a => a.id === managingEnrollmentsFor.id) && (
         <EnrollmentManager 
-          athlete={managingEnrollmentsFor} 
+          athlete={athletes.find(a => a.id === managingEnrollmentsFor.id)} 
           programs={programs} 
           onClose={() => setManagingEnrollmentsFor(null)} 
         />

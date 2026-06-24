@@ -17,12 +17,18 @@ export default async function ParentDashboardPage() {
         id, 
         status, 
         payment_status,
-        programs ( 
           id, 
           name, 
           type, 
           start_date, 
           end_date 
+        ),
+        payment_receipts (
+          id,
+          file_path,
+          file_name,
+          status,
+          created_at
         )
       )
     `)

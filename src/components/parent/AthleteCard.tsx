@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PaymentUploader from "./PaymentUploader";
 
 interface Program {
   id: string;
@@ -54,39 +55,48 @@ export default function AthleteCard({ athlete }: { athlete: Athlete }) {
           ) : (
             <div className="space-y-3">
               {activeEnrollments.map((enrollment) => (
-                <div key={enrollment.id} className="bg-zinc-950 border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h4 className="font-headline font-bold text-white">{enrollment.programs?.name}</h4>
-                    <span className="text-xs text-zinc-400 capitalize">{enrollment.programs?.type.replace('_', ' ')}</span>
+                <div key={enrollment.id} className="bg-zinc-950 border border-white/5 rounded-xl p-4 flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h4 className="font-headline font-bold text-white">{enrollment.programs?.name}</h4>
+                      <span className="text-xs text-zinc-400 capitalize">{enrollment.programs?.type.replace('_', ' ')}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {/* Payment Badge */}
+                      {enrollment.payment_status === 'paid' ? (
+                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">check_circle</span>
+                          Pagado
+                        </span>
+                      ) : enrollment.payment_status === 'pending' ? (
+                        <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          Pendiente
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 bg-zinc-800 text-zinc-400 border border-zinc-700 rounded-full text-xs font-bold uppercase tracking-wide">
+                          {enrollment.payment_status}
+                        </span>
+                      )}
+
+                      {/* Action Button */}
+                      <Link
+                        href={`/dashboard/parent/${athlete.id}/program/${enrollment.programs?.id}`}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-headline font-bold text-sm transition-colors flex items-center gap-1 shadow-lg shadow-red-900/20"
+                      >
+                        Ver Boletín
+                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      </Link>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-3">
-                    {/* Payment Badge */}
-                    {enrollment.payment_status === 'paid' ? (
-                      <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">check_circle</span>
-                        Pagado
-                      </span>
-                    ) : enrollment.payment_status === 'pending' ? (
-                      <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">schedule</span>
-                        Pendiente
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 bg-zinc-800 text-zinc-400 border border-zinc-700 rounded-full text-xs font-bold uppercase tracking-wide">
-                        {enrollment.payment_status}
-                      </span>
-                    )}
-
-                    {/* Action Button */}
-                    <Link
-                      href={`/dashboard/parent/${athlete.id}/program/${enrollment.programs?.id}`}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-headline font-bold text-sm transition-colors flex items-center gap-1 shadow-lg shadow-red-900/20"
-                    >
-                      Ver Boletín
-                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                    </Link>
-                  </div>
+                  {/* Uploader Section */}
+                  <PaymentUploader 
+                    enrollmentId={enrollment.id} 
+                    paymentStatus={enrollment.payment_status} 
+                    receipts={(enrollment as any).payment_receipts || []} 
+                  />
                 </div>
               ))}
             </div>
