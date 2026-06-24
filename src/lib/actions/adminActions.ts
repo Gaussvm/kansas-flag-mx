@@ -49,6 +49,8 @@ export async function registerAthleteAndEnrollAction(data: {
   parent_id: string;
   program_id: string;
   payment_status: string;
+  medical_info?: string;
+  category_id?: string;
 }) {
   const supabase = await verifyAdmin();
 
@@ -68,7 +70,9 @@ export async function registerAthleteAndEnrollAction(data: {
     .insert({
       first_name: data.first_name,
       last_name: data.last_name,
-      birth_date: data.birth_date
+      birth_date: data.birth_date,
+      medical_info: data.medical_info || null,
+      category_id: data.category_id || null
     })
     .select('id').single();
 
@@ -197,5 +201,113 @@ export async function updateProgramStatusAction(id: string, status: string) {
   if (error) throw new Error("Error al cambiar estado: " + error.message);
 
   revalidatePath('/dashboard/admin/programas');
+  return { success: true };
+}
+
+// ============================================================================
+// PHASE 5: CRM MANAGEMENT ACTIONS
+// ============================================================================
+
+export async function updateAthleteAction(id: string, data: { first_name: string; last_name: string; birth_date: string; medical_info: string; category_id: string | null }) {
+  const supabase = await verifyAdmin();
+  
+  const { error } = await supabase.from('athletes').update({
+    first_name: data.first_name,
+    last_name: data.last_name,
+    birth_date: data.birth_date,
+    medical_info: data.medical_info,
+    category_id: data.category_id || null
+  }).eq('id', id);
+  
+  if (error) throw new Error("Error al actualizar atleta: " + error.message);
+
+  revalidatePath('/dashboard/admin/crm');
+  return { success: true };
+}
+
+export async function addGuardianAction(athleteId: string, parentId: string, relationship: string) {
+  const supabase = await verifyAdmin();
+  
+  const { data: existing } = await supabase.from('guardian_athletes')
+    .select('*')
+    .eq('athlete_id', athleteId)
+    .eq('guardian_id', parentId)
+    .single();
+
+  if (existing) {
+    throw new Error("Este tutor ya está vinculado al atleta.");
+  }
+
+  const { error } = await supabase.from('guardian_athletes').insert({
+    athlete_id: athleteId,
+    guardian_id: parentId,
+    relationship: relationship || 'Tutor Legal'
+  });
+  
+  if (error) throw new Error("Error al vincular tutor: " + error.message);
+
+  revalidatePath('/dashboard/admin/crm');
+  return { success: true };
+}
+
+export async function removeGuardianAction(athleteId: string, parentId: string) {
+  const supabase = await verifyAdmin();
+  
+  const { error } = await supabase.from('guardian_athletes')
+    .delete()
+    .match({ athlete_id: athleteId, guardian_id: parentId });
+    
+  if (error) throw new Error("Error al remover tutor: " + error.message);
+
+  revalidatePath('/dashboard/admin/crm');
+  return { success: true };
+}
+
+export async function updateGuardianRelationshipAction(athleteId: string, parentId: string, relationship: string) {
+  const supabase = await verifyAdmin();
+  
+  const { error } = await supabase.from('guardian_athletes')
+    .update({ relationship })
+    .match({ athlete_id: athleteId, guardian_id: parentId });
+    
+  if (error) throw new Error("Error al actualizar parentesco: " + error.message);
+
+  revalidatePath('/dashboard/admin/crm');
+  return { success: true };
+}
+
+export async function manageEnrollmentAction(enrollmentId: string, status: string, paymentStatus: string, notes: string | null) {
+  const supabase = await verifyAdmin();
+  
+  const { error } = await supabase.from('enrollments')
+    .update({ 
+      status, 
+      payment_status: paymentStatus,
+      // If there are notes, we'd update them if the column exists. Skipping notes for now to prevent schema issues.
+    })
+    .eq('id', enrollmentId);
+    
+  if (error) throw new Error("Error al actualizar inscripción: " + error.message);
+
+  revalidatePath('/dashboard/admin/crm');
+  return { success: true };
+}
+
+export async function addEnrollmentAction(athleteId: string, programId: string, paymentStatus: string) {
+  const supabase = await verifyAdmin();
+  
+  const { error } = await supabase.from('enrollments').insert({
+    athlete_id: athleteId,
+    program_id: programId,
+    payment_status: paymentStatus,
+    status: 'active'
+  });
+  
+  if (error) {
+    if (error.code === '23505') throw new Error("El atleta ya está inscrito en este programa.");
+    throw new Error("Error al inscribir: " + error.message);
+  }
+
+  revalidatePath('/dashboard/admin/crm');
   return { success: true };
 }

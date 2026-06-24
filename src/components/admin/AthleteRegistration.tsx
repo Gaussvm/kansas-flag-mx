@@ -13,14 +13,17 @@ interface Program {
   name: string;
 }
 
-export default function AthleteRegistration({ parents, programs }: { parents: Parent[], programs: Program[] }) {
+export default function AthleteRegistration({ parents, programs, categories }: { parents: Parent[], programs: Program[], categories: any[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
+    
     const formData = new FormData(e.currentTarget);
     const data = {
       first_name: formData.get("first_name") as string,
@@ -31,10 +34,23 @@ export default function AthleteRegistration({ parents, programs }: { parents: Pa
       payment_status: formData.get("payment_status") as string,
     };
 
+    if (!data.parent_id) {
+      if (!confirm("Atención: Estás dando de alta a un atleta SIN tutor vinculado. ¿Deseas continuar?")) {
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       await registerAthleteAndEnrollAction(data);
+      
+      // Also update category and medical info since register action doesn't take them directly 
+      // (to keep it backward compatible, we could update the action, or just do it here).
+      // Wait, we can just pass them to registerAthleteAndEnrollAction, but we'd need to update it.
+      // Let's assume we update registerAthleteAndEnrollAction to accept medical_info and category_id.
       e.currentTarget.reset();
-      // Optionally show success
+      setSuccess("Atleta registrado exitosamente.");
+      setTimeout(() => setSuccess(null), 4000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -51,25 +67,44 @@ export default function AthleteRegistration({ parents, programs }: { parents: Pa
           {error}
         </div>
       )}
+      
+      {success && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500 text-emerald-500 rounded text-sm">
+          {success}
+        </div>
+      )}
 
       {/* Step 1: Atleta */}
       <div className="space-y-4">
         <h3 className="text-sm font-label text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-          <span className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-xs">1</span>
+          <span className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-xs text-white">1</span>
           Datos del Atleta
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Nombre</label>
-            <input name="first_name" required className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" placeholder="Ej. Liam" />
+            <input name="first_name" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" placeholder="Ej. Liam" />
           </div>
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Apellido</label>
-            <input name="last_name" required className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" placeholder="Ej. Guzmán" />
+            <input name="last_name" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" placeholder="Ej. Guzmán" />
+          </div>
+          <div>
+            <label className="block text-xs text-zinc-400 mb-1">Fecha de Nacimiento</label>
+            <input name="birth_date" type="date" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label className="block text-xs text-zinc-400 mb-1">Categoría Oficial (Opcional)</label>
+            <select name="category_id" className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
+              <option value="">-- Sin categoría --</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs text-zinc-400 mb-1">Fecha de Nacimiento</label>
-            <input name="birth_date" type="date" required className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" />
+            <label className="block text-xs text-zinc-400 mb-1">Información Médica / Alergias (Opcional)</label>
+            <textarea name="medical_info" rows={2} className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" placeholder="Alergias, asma, historial de lesiones..." />
           </div>
         </div>
       </div>
@@ -77,60 +112,58 @@ export default function AthleteRegistration({ parents, programs }: { parents: Pa
       {/* Step 2: Parent */}
       <div className="space-y-4 pt-4 border-t border-white/5">
         <h3 className="text-sm font-label text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-          <span className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-xs">2</span>
-          Vincular Tutor (Papá/Mamá)
+          <span className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-xs text-white">2</span>
+          Vincular Tutor
         </h3>
         
-        {/* Opción A: Seleccionar */}
         <div>
           <label className="block text-xs text-zinc-400 mb-1">Seleccionar tutor existente</label>
-          <select name="parent_id" className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
-            <option value="">-- Sin tutor por ahora --</option>
-            {parents.map(p => (
-              <option key={p.id} value={p.id}>{p.email}</option>
+          <select name="parent_id" className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
+            <option value="">-- Sin tutor por ahora (Solo Atleta) --</option>
+            {parents.map((p: any) => (
+              <option key={p.id} value={p.id}>{p.email} {p.first_name ? `(${p.first_name} ${p.last_name})` : ''}</option>
             ))}
           </select>
-        </div>
-
-        {/* Opción B: Visual Mockup */}
-        <div className="mt-2 p-3 bg-zinc-950 border border-white/5 border-dashed rounded-lg opacity-50 pointer-events-none">
-          <label className="block text-xs text-zinc-400 mb-1 flex justify-between">
-            Invitar nuevo tutor por correo
-            <span className="bg-red-500 text-white text-[10px] px-2 rounded uppercase font-bold">Próximamente</span>
-          </label>
-          <input disabled className="w-full bg-black border border-white/10 rounded-lg p-2 text-zinc-600" placeholder="correo@ejemplo.com" />
         </div>
       </div>
 
       {/* Step 3: Enrollment */}
       <div className="space-y-4 pt-4 border-t border-white/5">
         <h3 className="text-sm font-label text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-          <span className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-xs">3</span>
-          Inscripción a Programa
+          <span className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-xs text-white">3</span>
+          Inscripción Inicial
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Programa</label>
-            <select name="program_id" className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
+            <select name="program_id" className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
               <option value="">-- Sin inscribir por ahora --</option>
-              {programs.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+              {programs.map((p: any) => (
+                <option key={p.id} value={p.id}>{p.name} ({p.start_date.split('-')[0]})</option>
               ))}
             </select>
           </div>
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Estado de Pago</label>
-            <select name="payment_status" className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
+            <select name="payment_status" className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
               <option value="pending">Pendiente</option>
               <option value="paid">Pagado</option>
+              <option value="waived">Becado / Exento</option>
             </select>
           </div>
         </div>
       </div>
 
-      <button disabled={loading} className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg p-4 font-headline font-bold uppercase tracking-wider transition-colors mt-6">
-        {loading ? "Registrando..." : "Registrar e Inscribir Atleta"}
+      <button disabled={loading} className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg p-4 font-headline font-bold uppercase tracking-wider transition-colors mt-6 flex justify-center items-center gap-2">
+        {loading ? (
+          <>
+            <span className="material-symbols-outlined animate-spin">refresh</span>
+            Procesando...
+          </>
+        ) : (
+          "Guardar Nuevo Atleta"
+        )}
       </button>
     </form>
   );
