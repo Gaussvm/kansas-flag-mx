@@ -21,6 +21,10 @@ export default async function DashboardPage() {
     redirect("/dashboard/admin");
   }
 
+  if (profile?.role === 'parent') {
+    redirect("/dashboard/parent");
+  }
+
   return (
     <div className="min-h-[80vh] p-8 max-w-7xl mx-auto">
       <div className="bg-surface-container-lowest rounded-3xl p-8 shadow-sm border border-surface-container-highest">
