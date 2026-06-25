@@ -17,7 +17,12 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       <main className={`flex-grow w-full overflow-x-hidden ${!isPortal ? 'pt-20' : ''}`}>
         {children}
       </main>
-      {!isPortal && <Footer />}
+      {!isPortal && (
+        <>
+          <div className="elfsight-app-e9c21da5-9bee-4167-91cb-d4cc0ace0d19" data-elfsight-app-lazy></div>
+          <Footer />
+        </>
+      )}
     </>
   );
 }

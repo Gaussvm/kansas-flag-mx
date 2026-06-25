@@ -35,13 +35,10 @@ export default function RootLayout({
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-full flex flex-col bg-surface font-body text-on-surface selection:bg-secondary-container overflow-x-hidden">
+      <body className="min-h-screen flex flex-col bg-surface font-body text-on-surface selection:bg-secondary-container overflow-x-hidden">
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
-        
-        {/* Elfsight Chatbot */}
-        <div className="elfsight-app-e9c21da5-9bee-4167-91cb-d4cc0ace0d19" data-elfsight-app-lazy></div>
         <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
       </body>
     </html>
