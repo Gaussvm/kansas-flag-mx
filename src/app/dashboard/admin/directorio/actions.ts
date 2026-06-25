@@ -11,7 +11,8 @@ export async function updateUserRole(userId: string, newRole: string) {
   if (!user) return { error: "No autorizado" };
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") return { error: "No autorizado" };
+  const internalRoles = ['admin', 'master', 'director', 'staff_admin', 'staff', 'coach'];
+  if (!profile || !internalRoles.includes(profile.role)) return { error: "No autorizado" };
 
   // Update target user's role
   const { error } = await supabase

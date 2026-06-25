@@ -11,7 +11,8 @@ export async function createRate(formData: FormData) {
   if (!user) return { error: "No autorizado" };
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") return { error: "No autorizado" };
+  const internalRoles = ['admin', 'master', 'director', 'staff_admin', 'staff', 'coach'];
+  if (!profile || !internalRoles.includes(profile.role)) return { error: "No autorizado" };
 
   const name = formData.get("name") as string;
   const amountStr = formData.get("amount") as string;
@@ -47,7 +48,8 @@ export async function toggleRateStatus(rateId: string, isActive: boolean) {
   if (!user) return { error: "No autorizado" };
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") return { error: "No autorizado" };
+  const internalRoles = ['admin', 'master', 'director', 'staff_admin', 'staff', 'coach'];
+  if (!profile || !internalRoles.includes(profile.role)) return { error: "No autorizado" };
 
   const { error } = await supabase
     .from("rates")

@@ -13,6 +13,7 @@ export default function AdminNav() {
     { href: "/dashboard/admin/scouting", label: "Scouting", icon: "analytics" },
     { href: "/dashboard/admin/directorio", label: "Directorio", icon: "contact_page" },
     { href: "/dashboard/admin/finanzas", label: "Finanzas", icon: "payments" },
+    { href: "/dashboard/admin/catalogos", label: "Catálogos", icon: "category" },
   ];
 
   return (
