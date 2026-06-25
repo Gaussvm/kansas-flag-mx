@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import TemplateBuilder from "@/components/admin/TemplateBuilder";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default async function TemplateEditPage({ params }: { params: { id: string } }) {
   const isNew = params.id === "new";
@@ -39,9 +38,9 @@ export default async function TemplateEditPage({ params }: { params: { id: strin
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/scouting/templates">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+          <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 w-10 text-slate-400 hover:text-white hover:bg-slate-800">
             <ArrowLeft className="h-5 w-5" />
-          </Button>
+          </button>
         </Link>
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-100">

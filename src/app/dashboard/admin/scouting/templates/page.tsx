@@ -1,9 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Plus, Settings } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 
 export default async function TemplatesPage() {
   const supabase = await createClient();
@@ -25,9 +22,9 @@ export default async function TemplatesPage() {
           <p className="text-slate-400">Gestiona las métricas para tryouts, combines y evaluaciones</p>
         </div>
         <Link href="/dashboard/admin/scouting/templates/new">
-          <Button className="bg-orange-500 hover:bg-orange-600">
+          <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-orange-500 text-white hover:bg-orange-600">
             <Plus className="mr-2 h-4 w-4" /> Nueva Plantilla
-          </Button>
+          </button>
         </Link>
       </div>
 
@@ -42,9 +39,9 @@ export default async function TemplatesPage() {
                 </span>
               </div>
               <Link href={`/dashboard/admin/scouting/templates/${t.id}`}>
-                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 w-10 text-slate-400 hover:text-white hover:bg-slate-800">
                   <Settings className="h-5 w-5" />
-                </Button>
+                </button>
               </Link>
             </div>
             
@@ -56,7 +53,7 @@ export default async function TemplatesPage() {
               {t.program && <div>Programa: <span className="text-slate-300">{t.program.name}</span></div>}
               {t.location && <div>Sede: <span className="text-slate-300">{t.location.name}</span></div>}
               <div className="pt-2 border-t border-slate-800 mt-2">
-                Creado: {format(new Date(t.created_at), "d MMM yyyy", { locale: es })}
+                Creado: {new Date(t.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
               </div>
             </div>
           </div>
@@ -66,7 +63,7 @@ export default async function TemplatesPage() {
           <div className="col-span-full p-12 text-center border border-dashed border-slate-800 rounded-xl">
             <p className="text-slate-400 mb-4">No tienes plantillas creadas</p>
             <Link href="/dashboard/admin/scouting/templates/new">
-              <Button variant="outline" className="border-slate-700">Crear primera plantilla</Button>
+              <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 border border-slate-700 bg-transparent hover:bg-slate-800 text-white">Crear primera plantilla</button>
             </Link>
           </div>
         )}

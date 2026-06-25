@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Plus, Trash2, GripVertical, Save, AlertCircle } from "lucide-react";
 import { EvaluationTemplate, EvaluationMetric, InputType, Visibility } from "@/lib/types/scouting";
 import { createTemplateAction, updateTemplateAction, upsertMetricsAction } from "@/lib/actions/scoutingActions";
@@ -220,9 +219,9 @@ export default function TemplateBuilder({
             <h2 className="text-xl font-semibold text-slate-100">Métricas de Evaluación</h2>
             <p className="text-sm text-slate-400">Define los campos que se evaluarán en esta plantilla</p>
           </div>
-          <Button onClick={addMetric} variant="outline" className="border-slate-700 bg-slate-800 hover:bg-slate-700">
+          <button type="button" onClick={addMetric} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 border border-slate-700 bg-slate-800 text-white hover:bg-slate-700">
             <Plus className="h-4 w-4 mr-2" /> Agregar Métrica
-          </Button>
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -277,14 +276,13 @@ export default function TemplateBuilder({
                   </div>
                 </div>
 
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <button 
+                  type="button"
                   onClick={() => removeMetric(index)}
-                  className="text-slate-500 hover:text-red-400 hover:bg-red-500/10"
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 w-10 text-slate-500 hover:text-red-400 hover:bg-red-500/10"
                 >
                   <Trash2 className="h-5 w-5" />
-                </Button>
+                </button>
               </div>
 
               {/* Advanced Options Row */}
@@ -339,21 +337,22 @@ export default function TemplateBuilder({
       </div>
 
       <div className="flex justify-end gap-4">
-        <Button 
-          variant="outline" 
-          className="border-slate-700 bg-slate-900 hover:bg-slate-800"
+        <button 
+          type="button"
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white"
           onClick={() => router.push("/dashboard/admin/scouting/templates")}
         >
           Cancelar
-        </Button>
-        <Button 
+        </button>
+        <button 
+          type="button"
           onClick={handleSubmit} 
           disabled={isSubmitting}
-          className="bg-orange-500 hover:bg-orange-600"
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
         >
           <Save className="h-4 w-4 mr-2" />
           {isSubmitting ? "Guardando..." : "Guardar Plantilla"}
-        </Button>
+        </button>
       </div>
     </div>
   );
