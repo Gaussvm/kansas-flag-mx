@@ -17,6 +17,7 @@ export default async function ParentDashboardPage() {
         id, 
         status, 
         payment_status,
+        programs (
           id, 
           name, 
           type, 

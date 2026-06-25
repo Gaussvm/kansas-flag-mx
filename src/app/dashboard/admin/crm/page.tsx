@@ -5,6 +5,18 @@ import AthleteDirectory from "@/components/admin/AthleteDirectory";
 export default async function CRMPage() {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single();
+  const { data: profileLocations } = await supabase.from('profile_locations').select('location_id').eq('profile_id', user?.id);
+
+  const { data: allLocations } = await supabase.from('locations').select('*').eq('is_active', true).order('name');
+  
+  let allowedLocations = allLocations || [];
+  if (profile?.role === 'staff_admin') {
+    const assignedIds = profileLocations?.map(pl => pl.location_id) || [];
+    allowedLocations = allowedLocations.filter(loc => assignedIds.includes(loc.id));
+  }
+
   // Get active programs
   const { data: programs } = await supabase
     .from("programs")
@@ -52,7 +64,8 @@ export default async function CRMPage() {
           created_at,
           profiles:profiles!payment_receipts_uploaded_by_fkey ( first_name, last_name, email )
         )
-      )
+      ),
+      locations:primary_location_id ( id, name )
     `)
     .order("created_at", { ascending: false });
 
@@ -63,23 +76,15 @@ export default async function CRMPage() {
         <p className="text-zinc-400 font-body text-sm mt-1">Gestión integral de atletas, tutores e inscripciones.</p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-1">
-          <AthleteRegistration parents={parents || []} programs={programs || []} categories={categories || []} />
-        </div>
-
-        <div className="xl:col-span-2 space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="font-headline font-bold text-white uppercase tracking-wide">Directorio de Atletas</h3>
-          </div>
-          
-          <AthleteDirectory 
-            athletes={athletes || []} 
-            parents={parents || []} 
-            programs={programs || []} 
-            categories={categories || []} 
-          />
-        </div>
+      <div className="w-full">
+        <AthleteDirectory 
+          athletes={athletes || []} 
+          parents={parents || []} 
+          programs={programs || []} 
+          categories={categories || []} 
+          locations={allowedLocations}
+          currentUserRole={profile?.role || 'staff'}
+        />
       </div>
     </div>
   );

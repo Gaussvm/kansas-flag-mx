@@ -5,9 +5,21 @@ import ProgramList from "@/components/admin/ProgramList";
 export default async function ProgramasPage() {
   const supabase = await createClient();
   
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single();
+  const { data: profileLocations } = await supabase.from('profile_locations').select('location_id').eq('profile_id', user?.id);
+
+  const { data: allLocations } = await supabase.from('locations').select('*').eq('is_active', true).order('name');
+  
+  let allowedLocations = allLocations || [];
+  if (profile?.role === 'staff_admin') {
+    const assignedIds = profileLocations?.map(pl => pl.location_id) || [];
+    allowedLocations = allowedLocations.filter(loc => assignedIds.includes(loc.id));
+  }
+
   const { data: programs } = await supabase
     .from("programs")
-    .select("*")
+    .select(`*, locations:location_id (name)`)
     .order("start_date", { ascending: false });
 
   return (
@@ -19,7 +31,7 @@ export default async function ProgramasPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
-          <ProgramForm />
+          <ProgramForm locations={allowedLocations} />
         </div>
 
         <div className="lg:col-span-2 space-y-4">
@@ -27,7 +39,7 @@ export default async function ProgramasPage() {
           {(!programs || programs.length === 0) ? (
             <p className="text-zinc-500 font-body text-sm">No hay programas creados.</p>
           ) : (
-            <ProgramList programs={programs} />
+            <ProgramList programs={programs} locations={allowedLocations} currentUserRole={profile?.role || 'staff'} />
           )}
         </div>
       </div>

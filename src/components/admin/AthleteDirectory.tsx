@@ -4,11 +4,13 @@ import { useState } from "react";
 import AthleteEditModal from "./AthleteEditModal";
 import GuardianManager from "./GuardianManager";
 import EnrollmentManager from "./EnrollmentManager";
+import AthleteRegistration from "./AthleteRegistration";
 
-export default function AthleteDirectory({ athletes, parents, programs, categories }: { athletes: any[], parents: any[], programs: any[], categories: any[] }) {
+export default function AthleteDirectory({ athletes, parents, programs, categories, locations, currentUserRole }: { athletes: any[], parents: any[], programs: any[], categories: any[], locations: any[], currentUserRole: string }) {
   const [editingAthlete, setEditingAthlete] = useState<any | null>(null);
   const [managingGuardiansFor, setManagingGuardiansFor] = useState<any | null>(null);
   const [managingEnrollmentsFor, setManagingEnrollmentsFor] = useState<any | null>(null);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
   // Helper to calculate age dynamically
   const calculateAge = (birthDate: string) => {
@@ -23,24 +25,33 @@ export default function AthleteDirectory({ athletes, parents, programs, categori
     return age;
   };
 
-  if (!athletes || athletes.length === 0) {
-    return (
-      <div className="bg-zinc-900 border border-white/10 rounded-2xl p-12 text-center shadow-xl">
-        <span className="material-symbols-outlined text-4xl text-zinc-700 mb-2">group_off</span>
-        <p className="text-zinc-500 font-body">No hay atletas registrados en el directorio.</p>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h3 className="font-headline font-bold text-white uppercase tracking-wide">Directorio de Atletas</h3>
+        <button 
+          onClick={() => setShowRegistrationModal(true)}
+          className="bg-[#E31837] hover:bg-red-600 text-white px-4 py-2 rounded-lg font-headline font-bold tracking-wider text-sm flex items-center gap-2 transition-colors"
+        >
+          <span className="material-symbols-outlined text-[18px]">person_add</span>
+          Agregar Atleta
+        </button>
+      </div>
+
+      {(!athletes || athletes.length === 0) ? (
+        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-12 text-center shadow-xl">
+          <span className="material-symbols-outlined text-4xl text-zinc-700 mb-2">group_off</span>
+          <p className="text-zinc-500 font-body">No hay atletas registrados en el directorio.</p>
+        </div>
+      ) : (
+        <div className="bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm font-body whitespace-nowrap">
             <thead className="bg-zinc-950 text-zinc-500 font-label uppercase tracking-wider text-xs border-b border-white/5">
               <tr>
                 <th className="px-6 py-4">Atleta</th>
                 <th className="px-6 py-4">Tutores</th>
+                <th className="px-6 py-4">Sede</th>
                 <th className="px-6 py-4">Inscripciones</th>
                 <th className="px-6 py-4 text-right">Acciones</th>
               </tr>
@@ -78,6 +89,16 @@ export default function AthleteDirectory({ athletes, parents, programs, categori
                         </div>
                       ) : (
                         <span className="text-xs px-2 py-1 bg-red-900/20 text-red-400 border border-red-900/30 rounded">Sin tutor</span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {a.locations ? (
+                        <span className="text-xs font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10 uppercase tracking-wide">
+                          {a.locations.name}
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-1 bg-red-900/20 text-red-400 border border-red-900/30 rounded">Sin sede</span>
                       )}
                     </td>
                     
@@ -133,12 +154,14 @@ export default function AthleteDirectory({ athletes, parents, programs, categori
           </table>
         </div>
       </div>
+      )}
 
       {/* Modals */}
       {editingAthlete && athletes.find(a => a.id === editingAthlete.id) && (
         <AthleteEditModal 
           athlete={athletes.find(a => a.id === editingAthlete.id)} 
           categories={categories} 
+          locations={locations}
           onClose={() => setEditingAthlete(null)} 
         />
       )}
@@ -158,6 +181,29 @@ export default function AthleteDirectory({ athletes, parents, programs, categori
           onClose={() => setManagingEnrollmentsFor(null)} 
         />
       )}
-    </>
+
+      {showRegistrationModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-4xl my-8">
+            <button 
+              onClick={() => setShowRegistrationModal(false)}
+              className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-10 h-10 bg-zinc-800 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors z-10 border border-white/10 shadow-xl"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <div className="max-h-[85vh] overflow-y-auto rounded-2xl no-scrollbar">
+              <AthleteRegistration 
+                parents={parents} 
+                programs={programs} 
+                categories={categories} 
+                locations={locations}
+                currentUserRole={currentUserRole}
+                onSuccess={() => setShowRegistrationModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

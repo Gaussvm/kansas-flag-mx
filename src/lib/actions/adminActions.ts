@@ -6,20 +6,58 @@ import { revalidatePath } from "next/cache";
 /**
  * Reusable security verification for Server Actions
  */
-async function verifyAdmin() {
-  const supabase = await createClient();
+async function getUserProfile(supabase: any) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("No autorizado");
-  
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') {
-    throw new Error("Acceso denegado: Se requiere rol de Administrador para ejecutar esta acción.");
+  const { data: profile } = await supabase.from('profiles').select('id, role').eq('id', user.id).single();
+  if (!profile) throw new Error("Perfil no encontrado");
+  return { user, profile };
+}
+
+export async function verifyMasterOrAdmin() {
+  const supabase = await createClient();
+  const { profile } = await getUserProfile(supabase);
+  if (!['master', 'admin'].includes(profile.role)) {
+    throw new Error("Acceso denegado: Se requiere rol Master/Admin.");
   }
   return supabase;
 }
 
-export async function createProgramAction(data: { name: string; type: string; start_date: string; end_date: string }) {
-  const supabase = await verifyAdmin();
+export async function verifyOperationalAdmin() {
+  const supabase = await createClient();
+  const { profile } = await getUserProfile(supabase);
+  if (!['master', 'admin', 'director', 'staff_admin'].includes(profile.role)) {
+    throw new Error("Acceso denegado: Se requiere rol operativo.");
+  }
+  return supabase;
+}
+
+export async function verifyCanManageLocation(locationId: string) {
+  const supabase = await createClient();
+  const { profile } = await getUserProfile(supabase);
+  if (!['master', 'admin', 'director', 'staff_admin'].includes(profile.role)) {
+    throw new Error("Acceso denegado: Se requiere rol operativo.");
+  }
+  
+  if (['master', 'admin', 'director'].includes(profile.role)) {
+    return supabase;
+  }
+  
+  if (profile.role === 'staff_admin') {
+    if (!locationId) throw new Error("Sede no especificada");
+    const { data: loc } = await supabase.from('profile_locations')
+      .select('location_id')
+      .eq('profile_id', profile.id)
+      .eq('location_id', locationId)
+      .single();
+    if (!loc) throw new Error("Acceso denegado: No tienes permiso para gestionar esta sede.");
+  }
+  
+  return supabase;
+}
+
+export async function createProgramAction(data: { name: string; type: string; start_date: string; end_date: string; location_id: string }) {
+  const supabase = await verifyCanManageLocation(data.location_id);
   
   if (data.start_date > data.end_date) {
     throw new Error("La fecha de inicio no puede ser posterior a la fecha de fin.");
@@ -51,8 +89,9 @@ export async function registerAthleteAndEnrollAction(data: {
   payment_status: string;
   medical_info?: string;
   category_id?: string;
+  primary_location_id: string;
 }) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyCanManageLocation(data.primary_location_id);
 
   const { data: existingAthlete } = await supabase.from('athletes')
     .select('id')
@@ -72,7 +111,8 @@ export async function registerAthleteAndEnrollAction(data: {
       last_name: data.last_name,
       birth_date: data.birth_date,
       medical_info: data.medical_info || null,
-      category_id: data.category_id || null
+      category_id: data.category_id || null,
+      primary_location_id: data.primary_location_id
     })
     .select('id').single();
 
@@ -120,7 +160,7 @@ export async function registerAthleteAndEnrollAction(data: {
 }
 
 export async function upsertScoutingResultsAction(programId: string, results: any[]) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   if (results.length === 0) return { success: true };
 
   // Find or Create an Assessment for this program
@@ -168,8 +208,8 @@ export async function upsertScoutingResultsAction(programId: string, results: an
   return { success: true };
 }
 
-export async function updateProgramAction(id: string, data: { name: string; type: string; start_date: string; end_date: string; status: string }) {
-  const supabase = await verifyAdmin();
+export async function updateProgramAction(id: string, data: { name: string; type: string; start_date: string; end_date: string; status: string; location_id: string }) {
+  const supabase = await verifyCanManageLocation(data.location_id);
   
   if (data.start_date > data.end_date) {
     throw new Error("La fecha de inicio no puede ser posterior a la fecha de fin.");
@@ -195,7 +235,7 @@ export async function updateProgramAction(id: string, data: { name: string; type
 }
 
 export async function updateProgramStatusAction(id: string, status: string) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   
   const { error } = await supabase.from('programs').update({ status }).eq('id', id);
   if (error) throw new Error("Error al cambiar estado: " + error.message);
@@ -208,15 +248,16 @@ export async function updateProgramStatusAction(id: string, status: string) {
 // PHASE 5: CRM MANAGEMENT ACTIONS
 // ============================================================================
 
-export async function updateAthleteAction(id: string, data: { first_name: string; last_name: string; birth_date: string; medical_info: string; category_id: string | null }) {
-  const supabase = await verifyAdmin();
+export async function updateAthleteAction(id: string, data: { first_name: string; last_name: string; birth_date: string; medical_info: string; category_id: string | null; primary_location_id: string }) {
+  const supabase = await verifyCanManageLocation(data.primary_location_id);
   
   const { error } = await supabase.from('athletes').update({
     first_name: data.first_name,
     last_name: data.last_name,
     birth_date: data.birth_date,
     medical_info: data.medical_info,
-    category_id: data.category_id || null
+    category_id: data.category_id || null,
+    primary_location_id: data.primary_location_id
   }).eq('id', id);
   
   if (error) throw new Error("Error al actualizar atleta: " + error.message);
@@ -226,7 +267,7 @@ export async function updateAthleteAction(id: string, data: { first_name: string
 }
 
 export async function addGuardianAction(athleteId: string, parentId: string, relationship: string) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   
   const { data: existing } = await supabase.from('guardian_athletes')
     .select('*')
@@ -251,7 +292,7 @@ export async function addGuardianAction(athleteId: string, parentId: string, rel
 }
 
 export async function removeGuardianAction(athleteId: string, parentId: string) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   
   const { error } = await supabase.from('guardian_athletes')
     .delete()
@@ -264,7 +305,7 @@ export async function removeGuardianAction(athleteId: string, parentId: string) 
 }
 
 export async function updateGuardianRelationshipAction(athleteId: string, parentId: string, relationship: string) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   
   const { error } = await supabase.from('guardian_athletes')
     .update({ relationship })
@@ -277,7 +318,7 @@ export async function updateGuardianRelationshipAction(athleteId: string, parent
 }
 
 export async function manageEnrollmentAction(enrollmentId: string, status: string, paymentStatus: string, notes: string | null) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   
   const { error } = await supabase.from('enrollments')
     .update({ 
@@ -294,7 +335,7 @@ export async function manageEnrollmentAction(enrollmentId: string, status: strin
 }
 
 export async function addEnrollmentAction(athleteId: string, programId: string, paymentStatus: string) {
-  const supabase = await verifyAdmin();
+  const supabase = await verifyOperationalAdmin();
   
   const { error } = await supabase.from('enrollments').insert({
     athlete_id: athleteId,
@@ -309,5 +350,73 @@ export async function addEnrollmentAction(athleteId: string, programId: string, 
   }
 
   revalidatePath('/dashboard/admin/crm');
+  return { success: true };
+}
+
+// ============================================================================
+// PHASE 6: ROLE & LOCATION MANAGEMENT ACTIONS
+// ============================================================================
+
+export async function updateUserRoleAction(userId: string, newRole: string) {
+  const supabase = await verifyMasterOrAdmin();
+  
+  // Prevent removing last master/admin
+  if (newRole !== 'master' && newRole !== 'admin') {
+    const { data: masters } = await supabase.from('profiles').select('id').in('role', ['master', 'admin']);
+    if (masters && masters.length <= 1 && masters[0].id === userId) {
+      throw new Error("No puedes quitarte el rol de Master/Admin porque eres el último superusuario del sistema.");
+    }
+  }
+
+  const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
+  if (error) throw new Error("Error actualizando rol: " + error.message);
+
+  revalidatePath('/dashboard/admin/directorio');
+  return { success: true };
+}
+
+export async function assignLocationAction(userId: string, locationId: string, isPrimary: boolean = false) {
+  const supabase = await verifyMasterOrAdmin();
+  
+  if (isPrimary) {
+    // Unset current primary
+    await supabase.from('profile_locations').update({ is_primary: false }).eq('profile_id', userId);
+  }
+
+  const { error } = await supabase.from('profile_locations').upsert({
+    profile_id: userId,
+    location_id: locationId,
+    is_primary: isPrimary
+  }, { onConflict: 'profile_id, location_id' });
+
+  if (error) throw new Error("Error asignando sede: " + error.message);
+
+  revalidatePath('/dashboard/admin/directorio');
+  return { success: true };
+}
+
+export async function removeLocationAction(userId: string, locationId: string) {
+  const supabase = await verifyMasterOrAdmin();
+  
+  const { error } = await supabase.from('profile_locations')
+    .delete()
+    .match({ profile_id: userId, location_id: locationId });
+    
+  if (error) throw new Error("Error removiendo sede: " + error.message);
+
+  revalidatePath('/dashboard/admin/directorio');
+  return { success: true };
+}
+
+export async function setPrimaryLocationAction(userId: string, locationId: string) {
+  const supabase = await verifyMasterOrAdmin();
+  
+  await supabase.from('profile_locations').update({ is_primary: false }).eq('profile_id', userId);
+  const { error } = await supabase.from('profile_locations').update({ is_primary: true })
+    .match({ profile_id: userId, location_id: locationId });
+    
+  if (error) throw new Error("Error estableciendo sede primaria: " + error.message);
+
+  revalidatePath('/dashboard/admin/directorio');
   return { success: true };
 }

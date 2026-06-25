@@ -8,15 +8,28 @@ export const metadata = {
 export default async function DirectorioPage() {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: currentUser } = await supabase.from('profiles').select('role').eq('id', user?.id).single();
+
   // Fetch all profiles
   const { data: profiles, error } = await supabase
     .from("profiles")
-    .select("*")
+    .select(`
+      *,
+      profile_locations (
+        location_id,
+        is_primary,
+        locations ( name )
+      )
+    `)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error fetching profiles:", error);
   }
+
+  // Fetch active locations for the LocationManagerModal
+  const { data: locations } = await supabase.from('locations').select('*').eq('is_active', true).order('name');
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -32,7 +45,11 @@ export default async function DirectorioPage() {
       </div>
 
       <div className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden">
-        <UsersTable initialUsers={profiles || []} />
+        <UsersTable 
+          initialUsers={profiles || []} 
+          locations={locations || []} 
+          currentUserRole={currentUser?.role || 'staff'}
+        />
       </div>
     </div>
   );

@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { updateUserRole } from "./actions";
+import { updateUserRoleAction as updateUserRole } from "@/lib/actions/adminActions";
 
-export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
+import LocationManagerModal from "./LocationManagerModal";
+
+export default function UsersTable({ initialUsers, locations, currentUserRole }: { initialUsers: any[], locations: any[], currentUserRole: string }) {
   const [users, setUsers] = useState(initialUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [locationModalUser, setLocationModalUser] = useState<any | null>(null);
+
+  const canManageRoles = currentUserRole === 'master' || currentUserRole === 'admin';
 
   const filteredUsers = users.filter((u) => {
     const term = searchTerm.toLowerCase();
@@ -19,13 +24,16 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setLoadingId(userId);
-    const result = await updateUserRole(userId, newRole);
-    if (result.success) {
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-    } else {
-      alert(result.error);
+    try {
+      const result = await updateUserRole(userId, newRole);
+      if (result.success) {
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+      }
+    } catch (err: any) {
+      alert(err.message || "Error al actualizar el rol");
+    } finally {
+      setLoadingId(null);
     }
-    setLoadingId(null);
   };
 
   return (
@@ -52,6 +60,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
               <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap">Jugador</th>
               <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap">Contacto</th>
               <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap text-center">Gafete</th>
+              <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap">Sedes</th>
               <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap">Rol</th>
               <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap text-right">Acciones</th>
             </tr>
@@ -96,27 +105,56 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                       )}
                     </td>
                     <td className="p-4">
-                      <div className="relative inline-block w-32">
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                          disabled={isUpdating}
-                          className={`w-full appearance-none bg-black border rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider focus:outline-none transition-colors ${
-                            user.role === 'admin' 
-                              ? 'border-[#E31837] text-[#E31837]' 
-                              : user.role === 'staff'
-                              ? 'border-blue-500 text-blue-500'
-                              : 'border-zinc-700 text-zinc-400'
-                          } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        >
-                          <option value="player">Jugador</option>
-                          <option value="staff">Staff</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                        <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-sm pointer-events-none opacity-50">
-                          expand_more
+                      {user.profile_locations && user.profile_locations.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {user.profile_locations.map((pl: any) => (
+                            <span key={pl.location_id} className={`text-[10px] px-2 py-0.5 rounded-full border ${pl.is_primary ? 'bg-[#E31837]/10 text-[#E31837] border-[#E31837]/30' : 'bg-white/5 text-zinc-400 border-white/10'}`}>
+                              {pl.locations?.name} {pl.is_primary && '(Pri)'}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-zinc-600 text-xs block mb-2">--</span>
+                      )}
+                      {canManageRoles && (
+                        <button onClick={() => setLocationModalUser(user)} className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-bold flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">edit_location</span> Gestionar
+                        </button>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {canManageRoles ? (
+                        <div className="relative inline-block w-32">
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            disabled={isUpdating}
+                            className={`w-full appearance-none bg-black border rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider focus:outline-none transition-colors ${
+                              user.role === 'admin' || user.role === 'master'
+                                ? 'border-[#E31837] text-[#E31837]' 
+                                : user.role === 'staff' || user.role === 'staff_admin' || user.role === 'director'
+                                ? 'border-blue-500 text-blue-500'
+                                : 'border-zinc-700 text-zinc-400'
+                            } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <option value="master">Master</option>
+                            <option value="director">Director</option>
+                            <option value="staff_admin">Staff Admin</option>
+                            <option value="staff">Staff</option>
+                            <option value="coach">Coach</option>
+                            <option value="player">Jugador</option>
+                            <option value="parent">Tutor</option>
+                            {user.role === 'admin' && <option value="admin" disabled>Admin Legacy</option>}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-sm pointer-events-none opacity-50">
+                            expand_more
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-bold uppercase text-zinc-400 bg-white/5 px-2 py-1 rounded border border-white/10">
+                          {user.role}
                         </span>
-                      </div>
+                      )}
                     </td>
                     <td className="p-4 text-right">
                       <button className="p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-white/10" title="Ver Detalles">
@@ -130,6 +168,18 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* Location Modal */}
+      {locationModalUser && (
+        <LocationManagerModal
+          user={locationModalUser}
+          locations={locations}
+          onClose={() => setLocationModalUser(null)}
+          onUpdate={(updatedProfileLocations) => {
+            setUsers(prev => prev.map(u => u.id === locationModalUser.id ? { ...u, profile_locations: updatedProfileLocations } : u));
+          }}
+        />
+      )}
     </div>
   );
 }

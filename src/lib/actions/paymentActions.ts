@@ -7,16 +7,35 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
 /**
- * Reusable security verification for Admins (if needed explicitly)
+ * Reusable security verification for Payments
  */
-async function verifyAdmin(supabase: any) {
+async function verifyPaymentAdmin(supabase: any, enrollmentId?: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("No autorizado");
   
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') {
-    throw new Error("Acceso denegado: Se requiere rol de Administrador.");
+  const { data: profile } = await supabase.from('profiles').select('id, role').eq('id', user.id).single();
+  if (!['master', 'admin', 'staff_admin'].includes(profile?.role)) {
+    throw new Error("Acceso denegado: Se requiere rol de administración de pagos.");
   }
+  
+  if (profile.role === 'staff_admin' && enrollmentId) {
+    const { data: enrollment } = await supabase.from('enrollments')
+      .select('athletes(primary_location_id)')
+      .eq('id', enrollmentId)
+      .single();
+    
+    // Check if athletes exists and has a location
+    const locationId = enrollment?.athletes ? (Array.isArray(enrollment.athletes) ? enrollment.athletes[0]?.primary_location_id : enrollment.athletes.primary_location_id) : null;
+    if (locationId) {
+      const { data: loc } = await supabase.from('profile_locations')
+        .select('location_id')
+        .eq('profile_id', profile.id)
+        .eq('location_id', locationId)
+        .single();
+      if (!loc) throw new Error("Acceso denegado: No tienes permiso para aprobar pagos de esta sede.");
+    }
+  }
+
   return user;
 }
 
@@ -97,7 +116,6 @@ export async function getReceiptSignedUrlAction(filePath: string) {
 
 export async function approveReceiptAction(receiptId: string, isPartial: boolean, adminNotes?: string) {
   const supabase = await createClient();
-  const adminUser = await verifyAdmin(supabase);
 
   // 1. Get receipt to know the enrollment
   const { data: receipt, error: fetchError } = await supabase.from('payment_receipts')
@@ -106,6 +124,8 @@ export async function approveReceiptAction(receiptId: string, isPartial: boolean
     .single();
 
   if (fetchError || !receipt) throw new Error("Comprobante no encontrado.");
+
+  const adminUser = await verifyPaymentAdmin(supabase, receipt.enrollment_id);
 
   // 2. Update Receipt
   const { error: updateReceiptError } = await supabase.from('payment_receipts')
@@ -132,7 +152,6 @@ export async function approveReceiptAction(receiptId: string, isPartial: boolean
 
 export async function rejectReceiptAction(receiptId: string, adminNotes: string) {
   const supabase = await createClient();
-  const adminUser = await verifyAdmin(supabase);
 
   if (!adminNotes) {
     throw new Error("Se requieren notas explicando el rechazo.");
@@ -145,6 +164,8 @@ export async function rejectReceiptAction(receiptId: string, adminNotes: string)
     .single();
 
   if (fetchError || !receipt) throw new Error("Comprobante no encontrado.");
+  
+  const adminUser = await verifyPaymentAdmin(supabase, receipt.enrollment_id);
 
   // 2. Update Receipt
   const { error: updateReceiptError } = await supabase.from('payment_receipts')

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createProgramAction } from "@/lib/actions/adminActions";
 
-export default function ProgramForm() {
+export default function ProgramForm({ locations }: { locations: any[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,6 +17,7 @@ export default function ProgramForm() {
       type: formData.get("type") as string,
       start_date: formData.get("start_date") as string,
       end_date: formData.get("end_date") as string,
+      location_id: formData.get("location_id") as string,
     };
 
     try {
@@ -52,6 +53,16 @@ export default function ProgramForm() {
           <option value="tournament">Torneo</option>
           <option value="clinic">Clínica</option>
           <option value="other">Otro</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Sede</label>
+        <select name="location_id" required defaultValue={locations?.length === 1 ? locations[0].id : ""} className="w-full bg-zinc-950 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]">
+          <option value="">-- Seleccionar sede --</option>
+          {locations?.map(loc => (
+            <option key={loc.id} value={loc.id}>{loc.name}</option>
+          ))}
         </select>
       </div>
 

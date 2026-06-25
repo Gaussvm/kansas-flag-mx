@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import BoletinDashboard from "@/components/parent/BoletinDashboard";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     athleteId: string;
     programId: string;
-  };
+  }>;
 }
 
 export default async function BoletinPage({ params }: PageProps) {

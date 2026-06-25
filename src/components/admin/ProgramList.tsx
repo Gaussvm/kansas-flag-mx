@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { updateProgramAction, updateProgramStatusAction } from "@/lib/actions/adminActions";
 
-export default function ProgramList({ programs }: { programs: any[] }) {
+export default function ProgramList({ programs, locations, currentUserRole }: { programs: any[], locations: any[], currentUserRole: string }) {
   const [editingProgram, setEditingProgram] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState<string | null>(null); // program id
@@ -30,6 +30,7 @@ export default function ProgramList({ programs }: { programs: any[] }) {
       status: formData.get("status") as string,
       start_date: formData.get("start_date") as string,
       end_date: formData.get("end_date") as string,
+      location_id: formData.get("location_id") as string,
     };
 
     try {
@@ -70,7 +71,15 @@ export default function ProgramList({ programs }: { programs: any[] }) {
                   {p.status}
                 </span>
               </div>
-              <span className="text-xs text-zinc-500 uppercase tracking-widest capitalize">{p.type.replace('_', ' ')}</span>
+              <div className="flex gap-2 mt-1">
+                <span className="text-xs text-zinc-500 uppercase tracking-widest capitalize">{p.type.replace('_', ' ')}</span>
+                {p.locations && (
+                  <>
+                    <span className="text-xs text-zinc-600">•</span>
+                    <span className="text-xs text-zinc-400 uppercase tracking-widest font-bold">{p.locations.name}</span>
+                  </>
+                )}
+              </div>
             </div>
             
             <div className="flex flex-col sm:items-end w-full sm:w-auto gap-3">
@@ -163,8 +172,18 @@ export default function ProgramList({ programs }: { programs: any[] }) {
                 </div>
                 <div>
                   <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Fin</label>
-                  <input name="end_date" defaultValue={editingProgram.end_date.split('T')[0]} type="date" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" />
+                  <input name="end_date" defaultValue={editingProgram.end_date.split('T')[0]} type="date" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]" />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Sede</label>
+                <select name="location_id" defaultValue={editingProgram.location_id || ""} required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]">
+                  <option value="">-- Seleccionar sede --</option>
+                  {locations?.map(loc => (
+                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="pt-4 flex justify-end gap-3">

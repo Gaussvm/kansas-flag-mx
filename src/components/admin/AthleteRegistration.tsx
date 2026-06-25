@@ -13,7 +13,7 @@ interface Program {
   name: string;
 }
 
-export default function AthleteRegistration({ parents, programs, categories }: { parents: Parent[], programs: Program[], categories: any[] }) {
+export default function AthleteRegistration({ parents, programs, categories, locations, currentUserRole, onSuccess }: { parents: Parent[], programs: Program[], categories: any[], locations: any[], currentUserRole: string, onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -32,7 +32,14 @@ export default function AthleteRegistration({ parents, programs, categories }: {
       parent_id: formData.get("parent_id") as string,
       program_id: formData.get("program_id") as string,
       payment_status: formData.get("payment_status") as string,
+      primary_location_id: formData.get("primary_location_id") as string,
     };
+
+    if (!data.primary_location_id) {
+      setError("Debes seleccionar una sede para el atleta.");
+      setLoading(false);
+      return;
+    }
 
     if (!data.parent_id) {
       if (!confirm("Atención: Estás dando de alta a un atleta SIN tutor vinculado. ¿Deseas continuar?")) {
@@ -50,7 +57,13 @@ export default function AthleteRegistration({ parents, programs, categories }: {
       // Let's assume we update registerAthleteAndEnrollAction to accept medical_info and category_id.
       e.currentTarget.reset();
       setSuccess("Atleta registrado exitosamente.");
-      setTimeout(() => setSuccess(null), 4000);
+      
+      if (onSuccess) {
+        // give it a brief moment so the user can see the success message
+        setTimeout(() => onSuccess(), 1500);
+      } else {
+        setTimeout(() => setSuccess(null), 4000);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -81,6 +94,15 @@ export default function AthleteRegistration({ parents, programs, categories }: {
           Datos del Atleta
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-xs text-zinc-400 mb-1">Sede Principal</label>
+            <select name="primary_location_id" required defaultValue={locations.length === 1 ? locations[0].id : ""} className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]">
+              <option value="">-- Seleccionar sede --</option>
+              {locations.map((loc: any) => (
+                <option key={loc.id} value={loc.id}>{loc.name}</option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Nombre</label>
             <input name="first_name" required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" placeholder="Ej. Liam" />

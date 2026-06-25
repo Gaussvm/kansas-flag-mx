@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { updateAthleteAction } from "@/lib/actions/adminActions";
 
-export default function AthleteEditModal({ athlete, categories, onClose }: { athlete: any, categories: any[], onClose: () => void }) {
+export default function AthleteEditModal({ athlete, categories, locations, onClose }: { athlete: any, categories: any[], locations: any[], onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,6 +18,7 @@ export default function AthleteEditModal({ athlete, categories, onClose }: { ath
       birth_date: formData.get("birth_date") as string,
       medical_info: formData.get("medical_info") as string,
       category_id: formData.get("category_id") as string || null,
+      primary_location_id: formData.get("primary_location_id") as string,
     };
 
     try {
@@ -61,17 +62,27 @@ export default function AthleteEditModal({ athlete, categories, onClose }: { ath
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Fecha de Nacimiento</label>
-              <input name="birth_date" type="date" defaultValue={athlete.birth_date?.split('T')[0]} required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500" />
+              <input name="birth_date" type="date" defaultValue={athlete.birth_date?.split('T')[0]} required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]" />
             </div>
             <div>
-              <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Categoría Oficial</label>
-              <select name="category_id" defaultValue={athlete.category_id || ""} className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-red-500">
-                <option value="">-- Sin categoría --</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+              <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Sede Principal</label>
+              <select name="primary_location_id" defaultValue={athlete.primary_location_id || ""} required className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]">
+                <option value="">-- Seleccionar sede --</option>
+                {locations?.map((loc: any) => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-label text-zinc-500 uppercase mb-1">Categoría Oficial</label>
+            <select name="category_id" defaultValue={athlete.category_id || ""} className="w-full bg-black border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E31837]">
+              <option value="">-- Sin categoría --</option>
+              {categories.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>
