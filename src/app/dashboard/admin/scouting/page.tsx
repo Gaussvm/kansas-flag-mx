@@ -6,7 +6,7 @@ export default async function ScoutingPage() {
 
   const { data: programs, error: programsError } = await supabase
     .from("programs")
-    .select("id, name")
+    .select("id, name, default_template_id")
     .order("start_date", { ascending: false });
 
   if (programsError) console.error("Programs error:", programsError);
@@ -22,6 +22,14 @@ export default async function ScoutingPage() {
 
   if (enrollmentsError) console.error("Enrollments error:", enrollmentsError);
 
+  // Get templates and metrics
+  const { data: templates } = await supabase
+    .from("evaluation_templates")
+    .select(`
+      *,
+      metrics:evaluation_metrics(*)
+    `);
+
   return (
     <div className="space-y-8">
       <div>
@@ -29,7 +37,11 @@ export default async function ScoutingPage() {
         <p className="text-zinc-400 font-body text-sm mt-1">Captura masiva de métricas físicas y técnicas.</p>
       </div>
 
-      <AssessmentEntry programs={programs || []} enrollments={enrollments || []} />
+      <AssessmentEntry 
+        programs={programs || []} 
+        enrollments={enrollments || []} 
+        templates={templates || []}
+      />
     </div>
   );
 }

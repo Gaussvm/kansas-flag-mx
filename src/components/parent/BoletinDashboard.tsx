@@ -5,10 +5,16 @@ interface Result {
   metric_label: string;
   value_numeric: number | null;
   value_text: string | null;
+  value_boolean: boolean | null;
   unit: string | null;
   lower_is_better: boolean;
   phase: string;
   created_at: string;
+  evaluation_metrics?: {
+    category: string;
+    input_type: string;
+    options: any;
+  } | null;
 }
 
 interface Note {
@@ -34,12 +40,20 @@ interface Props {
 }
 
 export default function BoletinDashboard({ athlete, program, enrollment, results, notes, evidence }: Props) {
-  // Group results by metric_key
-  const metricsMap = new Map<string, { label: string, unit: string | null, lower_is_better: boolean, initial?: Result, final?: Result, progress?: Result[] }>();
+  // Group results by category -> metric_key
+  const categoriesMap = new Map<string, Map<string, { label: string, unit: string | null, lower_is_better: boolean, input_type: string, initial?: Result, final?: Result, progress?: Result[] }>>();
   
   results.forEach(r => {
+    const category = r.evaluation_metrics?.category || 'General';
+    const inputType = r.evaluation_metrics?.input_type || 'number';
+
+    if (!categoriesMap.has(category)) {
+      categoriesMap.set(category, new Map());
+    }
+    const metricsMap = categoriesMap.get(category)!;
+
     if (!metricsMap.has(r.metric_key)) {
-      metricsMap.set(r.metric_key, { label: r.metric_label, unit: r.unit, lower_is_better: r.lower_is_better, progress: [] });
+      metricsMap.set(r.metric_key, { label: r.metric_label, unit: r.unit, lower_is_better: r.lower_is_better, input_type: inputType, progress: [] });
     }
     const m = metricsMap.get(r.metric_key)!;
     if (r.phase === 'initial') m.initial = r;
@@ -47,7 +61,10 @@ export default function BoletinDashboard({ athlete, program, enrollment, results
     else m.progress!.push(r);
   });
 
-  const metrics = Array.from(metricsMap.values());
+  const categories = Array.from(categoriesMap.entries()).map(([catName, metricsMap]) => ({
+    name: catName,
+    metrics: Array.from(metricsMap.values())
+  }));
 
   return (
     <div className="space-y-8 pb-12">
@@ -156,81 +173,110 @@ export default function BoletinDashboard({ athlete, program, enrollment, results
               Evaluación Física y Técnica
             </h3>
             
-            {metrics.length === 0 ? (
+            {categories.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
                 <span className="material-symbols-outlined text-6xl text-zinc-800 mb-4">analytics</span>
                 <p className="text-zinc-400 font-body">Las métricas de evaluación estarán disponibles pronto.</p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {metrics.map(m => {
-                  const initialVal = m.initial?.value_numeric;
-                  const finalVal = m.final?.value_numeric;
-                  let improvement = null;
-                  let isBetter = false;
-
-                  if (initialVal != null && finalVal != null) {
-                    const diff = finalVal - initialVal;
-                    improvement = Math.abs(diff);
-                    if (m.lower_is_better) {
-                      isBetter = diff < 0; // Negative diff is good if lower is better (e.g., sprint time)
-                    } else {
-                      isBetter = diff > 0; // Positive diff is good if higher is better (e.g., jump length)
-                    }
-                  }
-
-                  return (
-                    <div key={m.label} className="bg-zinc-950 rounded-xl p-5 border border-white/5 relative overflow-hidden">
-                      <h4 className="font-headline font-bold text-lg text-white mb-4">{m.label}</h4>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-xs text-zinc-500 font-label uppercase tracking-widest mb-1">Inicial</span>
-                          <span className="text-2xl font-black text-white">
-                            {m.initial?.value_numeric ?? m.initial?.value_text ?? '--'}
-                            <span className="text-sm text-zinc-500 font-normal ml-1">{m.unit}</span>
-                          </span>
-                        </div>
+              <div className="space-y-10">
+                {categories.map(category => (
+                  <div key={category.name} className="space-y-6">
+                    <h4 className="text-xl font-bold text-red-500 uppercase tracking-widest border-b border-red-500/20 pb-2">
+                      {category.name}
+                    </h4>
+                    <div className="grid gap-6">
+                      {category.metrics.map(m => {
+                        const isNumeric = m.input_type === 'number' || m.input_type === 'rating' || m.input_type === 'percentage';
+                        const isBoolean = m.input_type === 'boolean';
                         
-                        <div className="flex flex-col">
-                          <span className="text-xs text-zinc-500 font-label uppercase tracking-widest mb-1">Final</span>
-                          <span className="text-2xl font-black text-white">
-                            {m.final?.value_numeric ?? m.final?.value_text ?? '--'}
-                            <span className="text-sm text-zinc-500 font-normal ml-1">{m.unit}</span>
-                          </span>
-                        </div>
+                        const renderValue = (res?: Result) => {
+                          if (!res) return '--';
+                          if (isNumeric && res.value_numeric != null) return res.value_numeric;
+                          if (isBoolean && res.value_boolean != null) return res.value_boolean ? 'Sí' : 'No';
+                          if (res.value_text != null) return res.value_text;
+                          return '--';
+                        };
 
-                        <div className="col-span-2 flex flex-col justify-center">
-                          {improvement !== null && improvement !== 0 ? (
-                            <div className={`flex items-center gap-2 p-3 rounded-lg ${isBetter ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-400'}`}>
-                              <span className="material-symbols-outlined">
-                                {isBetter ? 'trending_up' : 'trending_flat'}
-                              </span>
-                              <div>
-                                <p className="font-bold font-headline text-sm uppercase tracking-wide">
-                                  {isBetter ? 'Mejora' : 'Sin mejora notable'}
-                                </p>
-                                <p className="text-xs">
-                                  Diferencia de {improvement.toFixed(2)} {m.unit}
-                                </p>
+                        let improvement = null;
+                        let isBetter = false;
+
+                        if (isNumeric) {
+                          const initialVal = m.initial?.value_numeric;
+                          const finalVal = m.final?.value_numeric;
+                          if (initialVal != null && finalVal != null) {
+                            const diff = finalVal - initialVal;
+                            improvement = Math.abs(diff);
+                            if (m.lower_is_better) {
+                              isBetter = diff < 0; 
+                            } else {
+                              isBetter = diff > 0; 
+                            }
+                          }
+                        }
+
+                        return (
+                          <div key={m.label} className="bg-zinc-950 rounded-xl p-5 border border-white/5 relative overflow-hidden">
+                            <h4 className="font-headline font-bold text-lg text-white mb-4">{m.label}</h4>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="flex flex-col">
+                                <span className="text-xs text-zinc-500 font-label uppercase tracking-widest mb-1">Inicial</span>
+                                <span className="text-2xl font-black text-white">
+                                  {renderValue(m.initial)}
+                                  {m.unit && <span className="text-sm text-zinc-500 font-normal ml-1">{m.unit}</span>}
+                                </span>
+                              </div>
+                              
+                              <div className="flex flex-col">
+                                <span className="text-xs text-zinc-500 font-label uppercase tracking-widest mb-1">Final</span>
+                                <span className="text-2xl font-black text-white">
+                                  {renderValue(m.final)}
+                                  {m.unit && <span className="text-sm text-zinc-500 font-normal ml-1">{m.unit}</span>}
+                                </span>
+                              </div>
+
+                              <div className="col-span-2 flex flex-col justify-center">
+                                {isNumeric ? (
+                                  improvement !== null && improvement !== 0 ? (
+                                    <div className={`flex items-center gap-2 p-3 rounded-lg ${isBetter ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-400'}`}>
+                                      <span className="material-symbols-outlined">
+                                        {isBetter ? 'trending_up' : 'trending_flat'}
+                                      </span>
+                                      <div>
+                                        <p className="font-bold font-headline text-sm uppercase tracking-wide">
+                                          {isBetter ? 'Mejora' : 'Sin mejora notable'}
+                                        </p>
+                                        <p className="text-xs">
+                                          Diferencia de {improvement.toFixed(2)} {m.unit}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ) : m.final && m.initial && improvement === 0 ? (
+                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-500/10 text-blue-400">
+                                      <span className="material-symbols-outlined">drag_handle</span>
+                                      <span className="font-bold font-headline text-sm uppercase tracking-wide">Mantenido</span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2 p-3 rounded-lg border border-dashed border-white/10 text-zinc-500">
+                                      <span className="material-symbols-outlined">pending</span>
+                                      <span className="text-xs uppercase tracking-wide">Esperando evaluación final</span>
+                                    </div>
+                                  )
+                                ) : (
+                                  <div className="flex items-center gap-2 p-3 rounded-lg border border-white/5 bg-white/[0.02] text-zinc-400">
+                                    <span className="material-symbols-outlined">notes</span>
+                                    <span className="text-xs">Registro {isBoolean ? 'binario' : 'cualitativo'}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          ) : m.final && m.initial && improvement === 0 ? (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-500/10 text-blue-400">
-                              <span className="material-symbols-outlined">drag_handle</span>
-                              <span className="font-bold font-headline text-sm uppercase tracking-wide">Mantenido</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 p-3 rounded-lg border border-dashed border-white/10 text-zinc-500">
-                              <span className="material-symbols-outlined">pending</span>
-                              <span className="text-xs uppercase tracking-wide">Esperando evaluación final</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>

@@ -32,6 +32,15 @@ export async function verifyOperationalAdmin() {
   return supabase;
 }
 
+export async function verifyTemplateManager() {
+  const supabase = await createClient();
+  const { profile } = await getUserProfile(supabase);
+  if (!['master', 'admin', 'staff_admin'].includes(profile.role)) {
+    throw new Error("Acceso denegado: Se requiere rol de administración superior para configurar plantillas.");
+  }
+  return supabase;
+}
+
 export async function verifyCanManageLocation(locationId: string) {
   const supabase = await createClient();
   const { profile } = await getUserProfile(supabase);
@@ -191,11 +200,14 @@ export async function upsertScoutingResultsAction(programId: string, results: an
     assessment_id: assessmentId,
     athlete_id: r.athlete_id,
     metric_key: r.metric_key,
+    evaluation_metric_id: r.evaluation_metric_id || null,
     phase: r.phase,
     metric_label: r.metric_label,
-    value_numeric: r.value_numeric,
-    unit: r.unit,
-    lower_is_better: r.lower_is_better
+    value_numeric: r.value_numeric !== undefined ? r.value_numeric : null,
+    value_boolean: r.value_boolean !== undefined ? r.value_boolean : null,
+    value_text: r.value_text !== undefined ? r.value_text : null,
+    unit: r.unit || null,
+    lower_is_better: r.lower_is_better || false
   }));
 
   const { error } = await supabase.from('assessment_results').upsert(formattedResults, {

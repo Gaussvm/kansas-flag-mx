@@ -1,24 +1,95 @@
 "use client";
 
-import { useState } from "react";
-import { SCOUTING_METRICS } from "@/lib/constants/metrics";
+import { useState, useMemo, useEffect } from "react";
 import { upsertScoutingResultsAction } from "@/lib/actions/adminActions";
+import { EvaluationTemplate, EvaluationMetric } from "@/lib/types/scouting";
+import { createClient } from "@/lib/supabase/client";
 
-export default function AssessmentEntry({ programs, enrollments }: { programs: any[], enrollments: any[] }) {
+export default function AssessmentEntry({ 
+  programs, 
+  enrollments, 
+  templates 
+}: { 
+  programs: any[], 
+  enrollments: any[],
+  templates: EvaluationTemplate[]
+}) {
   const [selectedProgram, setSelectedProgram] = useState("");
   const [selectedPhase, setSelectedPhase] = useState("initial");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
 
   // Form State: { athleteId: { metricKey: value } }
   const [formData, setFormData] = useState<Record<string, Record<string, string>>>({});
 
-  const athletesInProgram = enrollments
+  const athletesInProgram = useMemo(() => enrollments
     .filter(e => e.program_id === selectedProgram)
     .map(e => ({
       id: e.athlete_id,
       name: `${e.athletes?.first_name} ${e.athletes?.last_name}`
-    }));
+    })), [enrollments, selectedProgram]);
+
+  const activeTemplate = useMemo(() => {
+    if (!selectedProgram) return null;
+    const program = programs.find(p => p.id === selectedProgram);
+    if (!program?.default_template_id) return null;
+    return templates.find(t => t.id === program.default_template_id) || null;
+  }, [selectedProgram, programs, templates]);
+
+  const activeMetrics = useMemo(() => {
+    if (!activeTemplate?.metrics) return [];
+    return activeTemplate.metrics
+      .filter(m => m.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order);
+  }, [activeTemplate]);
+
+  // Load existing results when program or phase changes
+  useEffect(() => {
+    async function loadExistingResults() {
+      if (!selectedProgram) {
+        setFormData({});
+        return;
+      }
+      
+      const { data: assessment } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('program_id', selectedProgram)
+        .limit(1)
+        .single();
+        
+      if (!assessment) {
+        setFormData({});
+        return;
+      }
+
+      const { data: results } = await supabase
+        .from('assessment_results')
+        .select('athlete_id, metric_key, value_numeric, value_boolean, value_text')
+        .eq('assessment_id', assessment.id)
+        .eq('phase', selectedPhase);
+
+      if (results && results.length > 0) {
+        const newFormData: Record<string, Record<string, string>> = {};
+        results.forEach(r => {
+          if (!newFormData[r.athlete_id]) newFormData[r.athlete_id] = {};
+          
+          let val = '';
+          if (r.value_numeric !== null) val = String(r.value_numeric);
+          else if (r.value_boolean !== null) val = String(r.value_boolean);
+          else if (r.value_text !== null) val = r.value_text;
+          
+          newFormData[r.athlete_id][r.metric_key] = val;
+        });
+        setFormData(newFormData);
+      } else {
+        setFormData({});
+      }
+    }
+    
+    loadExistingResults();
+  }, [selectedProgram, selectedPhase, supabase]);
 
   const handleInputChange = (athleteId: string, metricKey: string, value: string) => {
     setFormData(prev => ({
@@ -42,25 +113,42 @@ export default function AssessmentEntry({ programs, enrollments }: { programs: a
     // Transform formData into flat array for upsert
     const results = [];
     for (const athleteId of Object.keys(formData)) {
-      const metrics = formData[athleteId];
-      for (const metricKey of Object.keys(metrics)) {
-        const valStr = metrics[metricKey];
-        if (valStr.trim() === "") continue;
+      const athleteData = formData[athleteId];
+      for (const metricKey of Object.keys(athleteData)) {
+        const valStr = athleteData[metricKey];
+        if (valStr === undefined || valStr === "") continue;
 
-        const valNum = parseFloat(valStr);
-        const metricConfig = SCOUTING_METRICS.find(m => m.key === metricKey);
+        const metricConfig = activeMetrics.find(m => m.metric_key === metricKey);
+        if (!metricConfig) continue;
+
+        const isNumeric = metricConfig.input_type === 'number' || metricConfig.input_type === 'rating' || metricConfig.input_type === 'percentage';
+        const isBoolean = metricConfig.input_type === 'boolean';
         
-        if (metricConfig && !isNaN(valNum)) {
-          results.push({
-            athlete_id: athleteId,
-            metric_key: metricKey,
-            phase: selectedPhase,
-            metric_label: metricConfig.label,
-            value_numeric: valNum,
-            unit: metricConfig.unit,
-            lower_is_better: metricConfig.lower_is_better
-          });
+        let valNum = null;
+        let valBool = null;
+        let valText = null;
+
+        if (isNumeric) {
+           const parsed = parseFloat(valStr as string);
+           if (!isNaN(parsed)) valNum = parsed;
+        } else if (isBoolean) {
+           valBool = valStr === 'true';
+        } else {
+           valText = valStr;
         }
+
+        results.push({
+          athlete_id: athleteId,
+          metric_key: metricKey,
+          evaluation_metric_id: metricConfig.id,
+          phase: selectedPhase,
+          metric_label: metricConfig.label,
+          value_numeric: valNum,
+          value_boolean: valBool,
+          value_text: valText,
+          unit: metricConfig.unit,
+          lower_is_better: metricConfig.lower_is_better
+        });
       }
     }
 
@@ -137,10 +225,10 @@ export default function AssessmentEntry({ programs, enrollments }: { programs: a
               <thead className="bg-zinc-950 text-zinc-400 font-label uppercase tracking-wider text-xs">
                 <tr>
                   <th className="px-4 py-3 sticky left-0 bg-zinc-950 z-10 border-r border-white/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">Atleta</th>
-                  {SCOUTING_METRICS.map(m => (
-                    <th key={m.key} className="px-4 py-3 text-center">
+                  {activeMetrics.map(m => (
+                    <th key={m.metric_key} className="px-4 py-3 text-center min-w-[120px]">
                       <span className="block">{m.label}</span>
-                      <span className="text-[10px] text-zinc-600 lowercase">({m.unit})</span>
+                      {m.unit && <span className="text-[10px] text-zinc-600 lowercase">({m.unit})</span>}
                     </th>
                   ))}
                 </tr>
@@ -151,16 +239,44 @@ export default function AssessmentEntry({ programs, enrollments }: { programs: a
                     <td className="px-4 py-3 sticky left-0 bg-zinc-900 border-r border-white/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] font-bold text-white">
                       {athlete.name}
                     </td>
-                    {SCOUTING_METRICS.map(m => (
-                      <td key={m.key} className="px-2 py-2">
-                        <input 
-                          type="number"
-                          step="0.01"
-                          value={formData[athlete.id]?.[m.key] || ''}
-                          onChange={(e) => handleInputChange(athlete.id, m.key, e.target.value)}
-                          className="w-20 bg-black border border-white/10 rounded p-2 text-center text-white focus:outline-none focus:border-red-500 mx-auto block"
-                          placeholder="--"
-                        />
+                    {activeMetrics.map(m => (
+                      <td key={m.metric_key} className="px-2 py-2 text-center">
+                        {m.input_type === 'boolean' ? (
+                          <input 
+                            type="checkbox"
+                            checked={formData[athlete.id]?.[m.metric_key] === 'true'}
+                            onChange={(e) => handleInputChange(athlete.id, m.metric_key, e.target.checked ? 'true' : 'false')}
+                            className="w-5 h-5 rounded border-zinc-700 bg-zinc-900 text-red-500 mx-auto block"
+                          />
+                        ) : m.input_type === 'select' ? (
+                           <select
+                            value={formData[athlete.id]?.[m.metric_key] || ''}
+                            onChange={(e) => handleInputChange(athlete.id, m.metric_key, e.target.value)}
+                            className="w-full min-w-[100px] bg-black border border-white/10 rounded p-2 text-white focus:outline-none focus:border-red-500"
+                           >
+                             <option value="">--</option>
+                             {(m.options || []).map((opt: string) => (
+                               <option key={opt} value={opt}>{opt}</option>
+                             ))}
+                           </select>
+                        ) : m.input_type === 'textarea' ? (
+                           <textarea
+                            value={formData[athlete.id]?.[m.metric_key] || ''}
+                            onChange={(e) => handleInputChange(athlete.id, m.metric_key, e.target.value)}
+                            className="w-full min-w-[150px] bg-black border border-white/10 rounded p-2 text-white focus:outline-none focus:border-red-500"
+                            placeholder="Notas..."
+                            rows={1}
+                           />
+                        ) : (
+                          <input 
+                            type={m.input_type === 'number' || m.input_type === 'percentage' || m.input_type === 'rating' ? 'number' : 'text'}
+                            step="any"
+                            value={formData[athlete.id]?.[m.metric_key] || ''}
+                            onChange={(e) => handleInputChange(athlete.id, m.metric_key, e.target.value)}
+                            className="w-full min-w-[80px] bg-black border border-white/10 rounded p-2 text-center text-white focus:outline-none focus:border-red-500 mx-auto block"
+                            placeholder="--"
+                          />
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -173,6 +289,9 @@ export default function AssessmentEntry({ programs, enrollments }: { programs: a
         <div className="text-center py-12 border border-dashed border-white/10 rounded-xl">
           <span className="material-symbols-outlined text-4xl text-zinc-800 mb-2">fact_check</span>
           <p className="text-zinc-500">Selecciona un programa para cargar la cuadrícula de captura.</p>
+          {selectedProgram && !activeTemplate && (
+            <p className="text-red-400 mt-2 text-sm">Este programa no tiene una plantilla de evaluación asignada.</p>
+          )}
         </div>
       )}
     </div>

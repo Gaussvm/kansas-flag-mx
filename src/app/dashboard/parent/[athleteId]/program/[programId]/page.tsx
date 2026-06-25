@@ -40,10 +40,12 @@ export default async function BoletinPage({ params }: PageProps) {
     .from("assessment_results")
     .select(`
       *,
-      assessments!inner ( program_id )
+      assessments!inner ( program_id ),
+      evaluation_metrics!inner ( category, input_type, options, visibility )
     `)
     .eq("athlete_id", resolvedParams.athleteId)
     .eq("assessments.program_id", resolvedParams.programId)
+    .eq("evaluation_metrics.visibility", "parent_visible")
     .order('created_at', { ascending: true });
 
   // 3. Get Public Coach Notes
