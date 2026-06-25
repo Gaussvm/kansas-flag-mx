@@ -4,8 +4,9 @@ import TemplateBuilder from "@/components/admin/TemplateBuilder";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default async function TemplateEditPage({ params }: { params: { id: string } }) {
-  const isNew = params.id === "new";
+export default async function TemplateEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const isNew = resolvedParams.id === "new";
   const supabase = await createClient();
 
   let template = null;
@@ -15,7 +16,7 @@ export default async function TemplateEditPage({ params }: { params: { id: strin
     const { data: tData } = await supabase
       .from("evaluation_templates")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", resolvedParams.id)
       .single();
 
     if (!tData) notFound();
@@ -24,7 +25,7 @@ export default async function TemplateEditPage({ params }: { params: { id: strin
     const { data: mData } = await supabase
       .from("evaluation_metrics")
       .select("*")
-      .eq("template_id", params.id)
+      .eq("template_id", resolvedParams.id)
       .order("sort_order", { ascending: true });
 
     metrics = mData || [];
