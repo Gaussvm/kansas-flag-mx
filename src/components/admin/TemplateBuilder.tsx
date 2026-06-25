@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, GripVertical, Save, AlertCircle } from "lucide-react";
+import { Plus, Trash2, GripVertical, Save, AlertCircle, Info } from "lucide-react";
 import { EvaluationTemplate, EvaluationMetric, InputType, Visibility } from "@/lib/types/scouting";
 import { createTemplateAction, updateTemplateAction, upsertMetricsAction } from "@/lib/actions/scoutingActions";
 
@@ -245,7 +245,13 @@ export default function TemplateBuilder({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-500">Database Key (Único)</label>
+                    <label className="text-xs text-slate-500 flex items-center gap-1 group/tooltip relative">
+                      Database Key (Único)
+                      <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                      <div className="absolute bottom-full left-0 mb-2 hidden group-hover/tooltip:block w-48 bg-zinc-800 text-white text-[10px] p-2 rounded shadow-lg z-10">
+                        Identificador interno sin espacios ni mayúsculas (ej. 40_yard_dash). Se usa para guardar el valor en la base de datos de forma estable.
+                      </div>
+                    </label>
                     <input 
                       value={metric.metric_key || ""}
                       onChange={(e) => handleMetricChange(index, 'metric_key', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
