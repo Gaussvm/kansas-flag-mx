@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { Plus, Settings } from "lucide-react";
+import { Plus, Settings, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default async function TemplatesPage() {
   const supabase = await createClient();
   
-  const { data: templates } = await supabase
+  const { data: templates, error } = await supabase
     .from("evaluation_templates")
     .select(`
       *,
@@ -14,12 +14,23 @@ export default async function TemplatesPage() {
     `)
     .order("created_at", { ascending: false });
 
+  if (error) {
+    console.error("Error loading templates:", error);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-100">Plantillas de Evaluación</h1>
-          <p className="text-slate-400">Gestiona las métricas para tryouts, combines y evaluaciones</p>
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard/admin/scouting">
+            <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 w-10 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-100">Plantillas de Evaluación</h1>
+            <p className="text-slate-400">Gestiona las métricas para tryouts, combines y evaluaciones</p>
+          </div>
         </div>
         <Link href="/dashboard/admin/scouting/templates/new">
           <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-orange-500 text-white hover:bg-orange-600">
@@ -27,6 +38,13 @@ export default async function TemplatesPage() {
           </button>
         </Link>
       </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl">
+          <p className="font-bold mb-1">Error cargando plantillas:</p>
+          <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(error, null, 2)}</pre>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {templates?.map((t) => (
