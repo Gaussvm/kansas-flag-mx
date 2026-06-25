@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AssessmentEntry from "@/components/admin/AssessmentEntry";
+import Link from "next/link";
+import { Settings } from "lucide-react";
 
 export default async function ScoutingPage() {
   const supabase = await createClient();
@@ -32,9 +34,17 @@ export default async function ScoutingPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-headline font-black text-white uppercase tracking-tight">Scouting y Evaluaciones</h2>
-        <p className="text-zinc-400 font-body text-sm mt-1">Captura masiva de métricas físicas y técnicas.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-headline font-black text-white uppercase tracking-tight">Scouting y Evaluaciones</h2>
+          <p className="text-zinc-400 font-body text-sm mt-1">Captura masiva de métricas físicas y técnicas.</p>
+        </div>
+        <Link 
+          href="/dashboard/admin/scouting/templates"
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4 py-2 border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800"
+        >
+          <Settings className="h-4 w-4 mr-2" /> Configurar Plantillas
+        </Link>
       </div>
 
       <AssessmentEntry 
