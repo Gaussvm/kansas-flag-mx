@@ -17,7 +17,8 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role === 'admin') {
+  const internalRoles = ['admin', 'master', 'director', 'staff_admin', 'staff', 'coach'];
+  if (profile && internalRoles.includes(profile.role)) {
     redirect("/dashboard/admin");
   }
 
