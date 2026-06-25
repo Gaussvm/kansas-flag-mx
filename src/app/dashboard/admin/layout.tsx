@@ -41,7 +41,7 @@ export default async function AdminLayout({
               <p className="text-zinc-400 font-body text-sm mt-1">Gestión global de la Liga Kansas Flag</p>
             </div>
             <Link 
-              href="/dashboard"
+              href="/"
               className="px-4 py-2 bg-white/10 text-white rounded-lg font-headline font-bold text-sm hover:bg-white/20 transition-colors flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-sm">exit_to_app</span>

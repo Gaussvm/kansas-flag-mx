@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Epilogue, Inter } from "next/font/google";
 import "./globals.css";
-import TopNavBar from "@/components/TopNavBar";
-import Footer from "@/components/Footer";
 import Script from "next/script";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const epilogue = Epilogue({
   variable: "--font-epilogue",
@@ -37,16 +36,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-full flex flex-col bg-surface font-body text-on-surface selection:bg-secondary-container overflow-x-hidden">
-        <TopNavBar />
-        <main className="flex-grow pt-20 w-full overflow-x-hidden">
+        <LayoutWrapper>
           {children}
-        </main>
+        </LayoutWrapper>
         
         {/* Elfsight Chatbot */}
         <div className="elfsight-app-e9c21da5-9bee-4167-91cb-d4cc0ace0d19" data-elfsight-app-lazy></div>
         <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
-        
-        <Footer />
       </body>
     </html>
   );
