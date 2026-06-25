@@ -53,7 +53,18 @@ export default function TemplateBuilder({
 
   const handleMetricChange = (index: number, field: keyof EvaluationMetric, value: any) => {
     const newMetrics = [...metrics];
-    newMetrics[index] = { ...newMetrics[index], [field]: value };
+    const metric = newMetrics[index];
+    
+    metric[field] = value;
+    
+    // Auto-generate metric_key from label if it's a new metric (no id)
+    if (field === 'label' && !metric.id) {
+      metric.metric_key = value.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+        .replace(/[^a-z0-9]+/g, '_') // replace non-alphanumeric with underscore
+        .replace(/^_+|_+$/g, ''); // trim underscores
+    }
+    
     setMetrics(newMetrics);
   };
 
@@ -254,9 +265,10 @@ export default function TemplateBuilder({
                     </label>
                     <input 
                       value={metric.metric_key || ""}
-                      onChange={(e) => handleMetricChange(index, 'metric_key', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-400 outline-none"
-                      placeholder="ej_40_yard"
+                      readOnly
+                      disabled
+                      className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-500 outline-none cursor-not-allowed"
+                      title="Generado automáticamente por el sistema"
                     />
                   </div>
 
