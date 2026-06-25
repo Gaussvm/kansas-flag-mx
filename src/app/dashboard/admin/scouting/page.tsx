@@ -4,21 +4,23 @@ import AssessmentEntry from "@/components/admin/AssessmentEntry";
 export default async function ScoutingPage() {
   const supabase = await createClient();
 
-  const { data: programs } = await supabase
+  const { data: programs, error: programsError } = await supabase
     .from("programs")
     .select("id, name")
-    .eq("status", "active")
     .order("start_date", { ascending: false });
 
-  // Get all active enrollments with athlete info
-  const { data: enrollments } = await supabase
+  if (programsError) console.error("Programs error:", programsError);
+
+  // Get all enrollments with athlete info
+  const { data: enrollments, error: enrollmentsError } = await supabase
     .from("enrollments")
     .select(`
       athlete_id,
       program_id,
       athletes ( first_name, last_name )
-    `)
-    .eq("status", "active");
+    `);
+
+  if (enrollmentsError) console.error("Enrollments error:", enrollmentsError);
 
   return (
     <div className="space-y-8">
